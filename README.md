@@ -24,3 +24,6 @@ Mobil ve masaüstü tarayıcılar için tek dosyalık tavla oyunu.
 
 ## Gizlilik
 Giriş sistemi ve veritabanı kullanılmıyor. PeerJS dış servisi online eşleştirme için yalnızca online modda indirilir/çalıştırılır. Oyun gerçek para/bahis içermez.
+
+
+GitHub yazma testi: Tavla Kulübü dağıtım bağlantısı doğrulaması.
