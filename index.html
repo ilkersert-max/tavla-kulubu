@@ -227,6 +227,68 @@ button.hide,.hide{display:none!important}
   html body .shell .boardbox canvas,html body .playingFullscreen .boardbox canvas{width:100%!important;height:calc(100dvh - 95px)!important;aspect-ratio:auto!important;object-fit:fill!important}
   html body .shell .actionDock,html body .playingFullscreen .actionDock{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;width:100%!important;min-height:40px!important;height:40px!important;overflow:visible!important;clip-path:none!important;visibility:visible!important}
 }
+
+/* Wide landscape gameplay: use the entire screen, not a centered narrow board */
+@media (orientation: landscape) and (max-height: 800px) {
+ html,body {width:100%!important;max-width:100%!important;overflow-x:hidden!important}
+ .shell,.playingFullscreen .shell {
+   position:relative!important;display:block!important;width:100vw!important;max-width:100vw!important;
+   height:100dvh!important;min-height:0!important;padding:3px!important;margin:0!important;overflow:hidden!important;
+   box-sizing:border-box!important
+ }
+ .top,.playingFullscreen .top,.menu,.playingFullscreen .menu{display:none!important}
+ .layout,.playingFullscreen .layout{
+   display:grid!important;grid-template-columns:clamp(145px,22vw,290px) minmax(0,1fr)!important;
+   grid-template-rows:minmax(0,1fr)!important;gap:3px!important;width:100%!important;height:100%!important;
+   max-width:none!important;min-height:0!important;align-items:stretch!important
+ }
+ .boardStage,.playingFullscreen .boardStage{
+   grid-column:2!important;grid-row:1!important;position:relative!important;
+   display:flex!important;flex-direction:column!important;min-width:0!important;max-width:none!important;
+   width:100%!important;height:100%!important;min-height:0!important;flex:1 1 auto!important;gap:2px!important;
+   align-self:stretch!important
+ }
+ .turnBanner,.playingFullscreen .turnBanner{display:none!important}
+ .boardbox,.playingFullscreen .boardbox{
+   position:relative!important;display:flex!important;flex:1 1 auto!important;min-width:0!important;
+   min-height:0!important;width:100%!important;max-width:none!important;height:auto!important;
+   margin:0!important;padding:1px!important;border:2px solid #9d713f!important;border-radius:7px!important;
+   overflow:hidden!important;box-sizing:border-box!important
+ }
+ .boardbox canvas,.playingFullscreen .boardbox canvas{
+   display:block!important;flex:1 1 auto!important;width:100%!important;height:100%!important;
+   max-width:100%!important;max-height:100%!important;min-height:0!important;
+   aspect-ratio:auto!important;object-fit:fill!important
+ }
+ aside,.playingFullscreen aside{
+   grid-column:1!important;grid-row:1!important;position:relative!important;display:flex!important;
+   flex-direction:column!important;min-width:0!important;width:100%!important;height:100%!important;
+   max-height:none!important;overflow:hidden!important;gap:4px!important;margin:0!important
+ }
+ aside>.panel{display:none!important}
+ aside>.panel:first-child{
+   display:block!important;flex:0 0 auto!important;min-width:0!important;max-width:100%!important;
+   padding:8px!important;box-shadow:none!important;border-radius:9px!important
+ }
+ aside>.panel:first-child .title{font-size:13px!important;margin:0 0 6px!important}
+ aside>.panel:first-child .scores{flex-direction:column!important;gap:4px!important}
+ aside>.panel:first-child .score{font-size:12px!important;padding:5px!important}
+ aside>.panel:first-child .score strong{font-size:20px!important}
+ aside>.panel:first-child .diceStage,aside>.panel:first-child #remaining{display:none!important}
+ aside>.panel:first-child .status{font-size:11px!important;margin:4px 0!important;min-height:0!important}
+ .actionDock,.playingFullscreen .actionDock{
+   position:absolute!important;z-index:30!important;top:auto!important;bottom:5px!important;left:5px!important;
+   width:calc(clamp(145px,22vw,290px) - 10px)!important;transform:translateX(calc(-100% - 8px))!important;
+   display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(2,42px)!important;
+   gap:5px!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;
+   clip-path:none!important;overflow:visible!important;visibility:visible!important;opacity:1!important;
+   pointer-events:auto!important;background:transparent!important
+ }
+ .actionDock .dockBtn,.playingFullscreen .actionDock .dockBtn{height:42px!important;min-height:42px!important;padding:2px!important}
+ .actionDock .dockBtnLabel{display:none!important}
+ .actionDock .ico{font-size:22px!important}
+ .joinBanner:not(.hide){z-index:500!important}
+}
 </style></head><body><main class="shell"><header class="top"><div><div class="brand">◈ Tavla <span class="tag">Kulübü</span></div></div><div style="display:flex;gap:12px;align-items:center"><button id="landscapeStart" class="soundToggle hide" type="button">↻ Yatay Oyna</button><button id="fullScreen" class="soundToggle" type="button" title="Tam ekran aç / kapat">⛶ Tam ekran</button><button id="exitGame" class="soundToggle hide" type="button" title="Masadan ayrıl">✕ Çık</button><button class="soundToggle" id="soundToggle" type="button">🔊 Ses açık</button><span id="conn" class="small">Çevrimdışı oynanabilir</span></div></header><nav class="menu"><button id="botMode" class="active">🤖 Bilgisayara karşı</button><button id="onlineMode" class="ghost">🌐 Arkadaşımla online</button></nav><section class="layout"><div class="boardStage"><div class="turnBanner"><strong id="turnLabel">⚪ Beyazın sırası</strong><span id="turnStep" class="small">Zar bekleniyor</span><span class="pulse" aria-hidden="true"></span></div><div class="boardbox"><div id="joinBanner" class="joinBanner hide" role="dialog" aria-label="Arkadaşının masasına katıl"><strong>🎲 Tavla daveti</strong><span>Arkadaşın seni masasına davet etti</span><button id="joinQuick" type="button">Masaya Katıl</button></div><canvas id="board" width="1000" height="720" tabindex="0" role="img" aria-label="Tavla tahtası: pulları seçerek oyna"></canvas><div id="gameOverlay" class="gameOverlay" aria-live="polite"><div class="gameCard"><div id="gameOverBadge" class="gameBadge">El bitti</div><h2 id="gameOverTitle">Kazanan</h2><p id="gameOverText">Yeni el için devam edebilirsin.</p><div class="gameScoreline"><span>⚪ Beyaz<strong id="overlayWhiteScore">0</strong></span><span>⚫ Siyah<strong id="overlayBlackScore">0</strong></span></div><button id="playAgain" class="overlayBtn" type="button">Yeni el başlat</button></div></div></div><div class="actionDock" role="group" aria-label="Oyun kontrolleri"><button id="roll" class="dockBtn primary" type="button"><span class="ico">🎲</span><span class="dockBtnLabel">Zar At</span></button><button id="undo" class="dockBtn ghost" type="button"><span class="ico">↶</span><span class="dockBtnLabel">Geri Al</span></button><button id="end" class="dockBtn success" type="button"><span class="ico">✓</span><span class="dockBtnLabel">Hamleyi Bitir</span></button><button id="new" class="dockBtn ghost" type="button"><span class="ico">＋</span><span class="dockBtnLabel">Yeni Oyun</span></button></div></div><aside><div class="panel"><h3 class="title">Maç Durumu</h3><div class="scores"><div class="score">⚪ Beyaz<strong id="whiteScore">0</strong></div><div class="score">⚫ Siyah<strong id="blackScore">0</strong></div></div><p class="status" id="status" aria-live="polite"></p><p id="remaining" class="small"></p><div class="diceStage"><div><div class="diceCaption">🎲 ZARLAR</div><div class="dice"><span class="die" id="die1">–</span><span class="die" id="die2">–</span></div></div></div></div><div class="panel"><h3 class="title">Görünüm</h3><label for="controlPlace">Kontroller</label><select id="controlPlace"><option value="dice">Zarın altında</option><option value="below">Tablanın altında</option></select><label for="boardTheme">Tabla tonu</label><select id="boardTheme"><option value="soft">Soft · Kum ve adaçayı</option><option value="classic">Klasik ahşap</option><option value="dark">Gece</option><option value="ivory">Fildişi &amp; Ceviz</option><option value="ocean">Okyanus Mavisi</option><option value="forest">Orman Yeşili</option><option value="slate">Kül Grisi</option></select><h3 class="title">Maç</h3><label for="goal">Maç hedefi</label><select id="goal"><option value="1">1 sayı</option><option value="3" selected>3 sayı</option><option value="5">5 sayı</option><option value="7">7 sayı</option></select></div><div class="panel" id="onlineBox"><h3 class="title">Arkadaşını davet et</h3><label>Oda bağlantısı</label><input id="invite" readonly placeholder="Masa açınca oluşur"><div class="actions"><button id="host">Masa aç</button><button id="copy" class="ghost">Bağlantıyı kopyala</button><button id="join" class="ghost wide hide">Davet edilen masaya katıl</button></div><div class="inviteActions"><button id="share" class="ghost" type="button" disabled>↗ Davet Gönder</button><button id="copyInvite" class="ghost" type="button" disabled>⧉ Kopyala</button></div><p class="small" id="peerStatus">İki cihazın da interneti açık olmalıdır.</p></div></aside></section></main><script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script><script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id), cv=$('board'),ctx=cv.getContext('2d');let mode='bot',game,selected=null,targets=[],history=[],moveLogs=[],lastMove=null,diceAnimating=false,rollToken=0,peer=null,connection=null,peerRole=null,onlineReady=false,botBusy=false;const ROOM='tavlakulubu-';let guestCanUndo=false;const pref={place:localStorage.getItem('tk_place')||'dice',theme:localStorage.getItem('tk_theme')||'soft'};const playerSide=()=>mode==='online'?(peerRole==='guest'?-1:1):(mode==='local'?(game?.turn||1):1);const viewFlip=()=>playerSide()===-1;function syncPrefs(){document.body.classList.remove('boardTheme-soft','boardTheme-classic','boardTheme-dark','boardTheme-ivory','boardTheme-ocean','boardTheme-forest','boardTheme-slate');document.body.classList.add('boardTheme-'+pref.theme);$('controlPlace').value=pref.place;$('boardTheme').value=pref.theme;document.querySelector('.actionDock').classList.toggle('below',pref.place==='below');draw();}const fairDie=()=>{const data=new Uint32Array(1);const bound=4294967292;do{crypto.getRandomValues(data);}while(data[0]>=bound);return data[0]%6+1;};const initial=()=>{let p=Array(24).fill(0);p[23]=2;p[12]=5;p[7]=3;p[5]=5;p[0]=-2;p[11]=-5;p[16]=-3;p[18]=-5;return {p,bar:[0,0],off:[0,0],turn:1,dice:[],rolled:false,lastRoll:null,scores:[0,0],winner:0,goal:Number($('goal').value),message:'Beyaz başlıyor. Zar atın.'}};
