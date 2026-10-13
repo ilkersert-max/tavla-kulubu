@@ -440,6 +440,8 @@ const landscapeDock=document.querySelector('.actionDock');
 landscapeLayout.dockNext=landscapeDock.nextSibling;
 function setImp(el,props){if(!el)return;for(const [key,value] of Object.entries(props))el.style.setProperty(key,value,'important');}
 const landscapeNodes=[document.querySelector('.shell'),document.querySelector('.layout'),document.querySelector('.boardStage'),document.querySelector('.boardbox'),cv,document.querySelector('aside'),landscapeDock];
+const exitControl=$('leaveFullscreen'),exitHome=exitControl.parentNode,exitNext=exitControl.nextSibling;
+const exitStyles=['position','top','right','left','bottom','transform','width','height','z-index','display','margin'];
 function refreshPhoneLayout(){
  const vv=window.visualViewport;
  const width=vv?.width||window.innerWidth,height=vv?.height||window.innerHeight;
@@ -448,6 +450,8 @@ function refreshPhoneLayout(){
  const active=touch&&landscape&&height<860;
  document.body.classList.toggle('phoneLandscape',active);$('leaveFullscreen').hidden=!(active||!!document.fullscreenElement);
  if(!active){
+   if(exitControl.parentNode!==exitHome)exitHome.insertBefore(exitControl,exitNext);
+   for(const k of exitStyles)exitControl.style.removeProperty(k);
    if(landscapeDock.parentNode!==landscapeLayout.dockParent)landscapeLayout.dockParent.insertBefore(landscapeDock,landscapeLayout.dockNext);
    for(const el of landscapeNodes){if(!el)continue;for(const k of ['width','height','min-height','max-width','max-height','display','position','flex','flex-direction','flex-wrap','grid-template-columns','gap','padding','margin','overflow','align-items','justify-content','aspect-ratio','left','bottom','top','transform','z-index','border-width','box-sizing','visibility','opacity','clip-path','pointer-events'])el.style.removeProperty(k);}
    return;
@@ -459,6 +463,9 @@ function refreshPhoneLayout(){
  const usableH=Math.max(170,outerH-8);
  const shell=landscapeNodes[0],layout=landscapeNodes[1],stage=landscapeNodes[2],box=landscapeNodes[3],aside=landscapeNodes[5];
  if(landscapeDock.parentNode!==aside)aside.appendChild(landscapeDock);
+ if(exitControl.parentNode!==aside)aside.appendChild(exitControl);
+ setImp(aside,{position:'relative'});
+ setImp(exitControl,{position:'absolute',left:'12px',top:'48%',right:'auto',bottom:'auto',transform:'translateY(-50%)',width:'44px',height:'44px','z-index':'100',display:'flex',margin:'0'});
  setImp(shell,{width:outerW+'px',height:outerH+'px','max-width':'none','max-height':'none',padding:'3px',margin:'0',overflow:'hidden','box-sizing':'border-box'});
  setImp(layout,{display:'grid','grid-template-columns':left+'px minmax(0,1fr)',width:'100%',height:'100%','min-height':'0','max-width':'none',gap:'4px',margin:'0','align-items':'stretch'});
  setImp(aside,{display:'flex','flex-direction':'column',width:'100%',height:'100%','max-height':'none',overflow:'hidden',gap:'5px','grid-column':'1','grid-row':'1',margin:'0'});
