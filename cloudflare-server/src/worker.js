@@ -18,6 +18,12 @@ export default {
       if(!init.ok)return json({error:"room_creation_failed"},502);
       return json({room,hostSecret,wsPath:"/room/"+room},201);
     }
+    const roomStatus=url.pathname.match(/^\/room\/([a-f0-9]{10})\/status$/);
+    if(roomStatus&&request.method==="GET"){
+      const stub=env.ROOM.getByName(roomStatus[1]);
+      const response=await stub.fetch(new Request("https://room.internal/status"));
+      return json(await response.json(),response.status);
+    }
     const match=url.pathname.match(/^\/room\/([a-f0-9]{10})$/);
     if(match&&request.headers.get("upgrade")?.toLowerCase()==="websocket"){
       const stub=env.ROOM.getByName(match[1]);
@@ -30,6 +36,10 @@ export default {
 export class TavlaRoom extends DurableObject {
   async fetch(request) {
     const url=new URL(request.url);
+    if(url.pathname==="/status"&&request.method==="GET"){
+      const initialized=!!(await this.ctx.storage.get("hostSecret"));
+      return new Response(JSON.stringify({exists:initialized,hostOnline:this.ctx.getWebSockets("host").length>0,guestOnline:this.ctx.getWebSockets("guest").length>0}),{headers:{"content-type":"application/json"}});
+    }
     if(url.pathname==="/init"&&request.method==="POST"){
       if(await this.ctx.storage.get("hostSecret"))return new Response("already_initialized",{status:409});
       const data=await request.json();
