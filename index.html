@@ -334,7 +334,7 @@ function start(keepScores=false){travel=null;travelId++;let old=game;game=initia
 function recordMove(m){lastMove={from:m.from,to:m.to,die:m.die,time:Date.now()};let who=game.turn===1?'⚪ Beyaz':'⚫ Siyah';let label=(m.from==='bar'?'Kırık':m.from+1)+' → '+(m.to==='off'?'Dışarı':m.to+1);moveLogs.unshift({who,label,die:m.die});moveLogs=moveLogs.slice(0,8);}
 function doMove(m){const before=clone(game),c=game.turn;history.push(before);recordMove(m);apply(game,m);animateChecker(m.from,m.to,c,before);selected=null;targets=[];if(gameEnd()){broadcast();render();return;}let possible=legal(game);if(!game.dice.length||!possible.length){game.message='Hamleler tamamlandı. Sırayı geçin.';}else game.message=(game.turn===1?'Beyaz':'Siyah')+' oynuyor.';render();broadcast();if(mode==='bot'&&game.turn===-1&&game.dice.length===0)finishTurn();}
 function finishTurn(){if(mode==='online'&&peerRole==='guest')return;if(game.winner||!game.rolled)return; if(legal(game).length)return;travel=null;travelId++;game.turn*=-1;game.dice=[];game.rolled=false;cancelAnimationFrame(rollAnimationId);diceAnimating=false;boardDice=null;history=[];selected=null;targets=[];game.message=(game.turn===1?'Beyaz':'Siyah')+' zar atacak.';lastMove=null;render();broadcast();if(mode==='bot'&&game.turn===-1)botTurn();}
-function roll(){if(game.winner||game.rolled||diceAnimating||!allowed())return;let a=fairDie(),b=fairDie();game.dice=a===b?[a,a,a,a]:[a,b];game.rolled=true;game.lastRoll=[a,b];history=[];game.message=(game.turn===1?'Beyaz':'Siyah')+' için '+a+'–'+b;showRollAnimation(a,b);render();broadcast();if(!legal(game).length){game.message+=' · Oynanabilir hamle yok.';render();broadcast();if(mode==='bot'&&game.turn===-1)finishTurn();}}
+function roll(){if(mode==='online'&&peerRole==='guest'){if(onlineReady&&connection?.open&&!game.rolled&&!diceAnimating)connection.send({type:'roll'});return;}if(game.winner||game.rolled||diceAnimating||!allowed())return;let a=fairDie(),b=fairDie();game.dice=a===b?[a,a,a,a]:[a,b];game.rolled=true;game.lastRoll=[a,b];history=[];game.message=(game.turn===1?'Beyaz':'Siyah')+' için '+a+'–'+b;showRollAnimation(a,b);render();broadcast();if(!legal(game).length){game.message+=' · Oynanabilir hamle yok.';render();broadcast();if(mode==='bot'&&game.turn===-1)finishTurn();}}
 function allowed(){if(mode==='bot')return game.turn===1&&!botBusy;if(mode==='online')return onlineReady&&game.turn===(peerRole==='host'?1:-1);return true;}
 function botTurn(){if(mode!=='bot'||game.turn!==-1||game.winner)return;botBusy=true;render();setTimeout(()=>{if(mode!=='bot'||game.turn!==-1)return;botBusy=false;rollBot();},450)}function rollBot(){let a=fairDie(),b=fairDie();game.dice=a===b?[a,a,a,a]:[a,b];game.rolled=true;game.lastRoll=[a,b];game.message='Bot '+a+'–'+b+' attı.';showRollAnimation(a,b);render();setTimeout(botPlay,900)}
 function botPlay(){if(mode!=='bot'||game.turn!==-1||game.winner)return;let ss=sequences(game).filter(s=>s.length);if(!ss.length){finishTurn();return;}let score=s=>{let x=clone(game),v=0;for(let m of s){let hit=typeof m.to==='number'&&x.p[m.to]===1;apply(x,m);v+=(hit?12:0)+(m.to==='off'?11:0);if(typeof m.to==='number'){let q=x.p[m.to];if(q<=-2)v+=5;if(q===-1)v-=4;v+=m.to/24;} }return v+Math.random()*1.5};ss.sort((a,b)=>score(b)-score(a));let chosen=ss[0],step=0;function next(){if(mode!=='bot'||game.turn!==-1)return;if(step>=chosen.length){if(!game.winner)finishTurn();else render();return;}let m=chosen[step++],before=clone(game);recordMove(m);apply(game,m);animateChecker(m.from,m.to,-1,before);game.message='🤖 Bot oynuyor: '+(m.from==='bar'?'Kırık':m.from+1)+' → '+(m.to==='off'?'Dışarı':m.to+1);gameEnd();render();setTimeout(next,480);}next();}
@@ -428,7 +428,7 @@ function broadcast(){if(mode==='online'&&peerRole==='host'&&connection?.open)con
 const origChoose=choose;function guestClick(pos){if(!onlineReady||game.turn!==-1||!game.rolled||game.winner||diceAnimating)return;let ml=legal(game);if(selected!==null){let m=ml.find(m=>m.from===selected&&m.to===pos);if(m){selected=null;targets=[];if(connection?.open){let before=clone(game);apply(game,m);animateChecker(m.from,m.to,-1,before);connection.send({type:'move',from:m.from,to:m.to,die:m.die});game.message='Hamle doğrulanıyor';render();}return;}}if(ml.some(m=>m.from===pos)){selected=pos;targets=ml.filter(m=>m.from===pos);}else{selected=null;targets=[];}render();}
 
 cv.removeEventListener('nothing',()=>{}); // touch and mouse clicks use canvas click listener below via capture
-$('roll').addEventListener('click',()=>{if(mode==='online'&&peerRole==='guest'&&onlineReady&&!game.rolled&&!diceAnimating)connection.send({type:'roll'});},true);
+
 $('undo').addEventListener('click',()=>{if(mode==='online'&&peerRole==='guest'&&onlineReady&&guestCanUndo&&connection?.open)connection.send({type:'undo'});},true);$('end').addEventListener('click',()=>{if(mode==='online'&&peerRole==='guest'&&onlineReady&&game.rolled&&!legal(game).length)connection.send({type:'end'});},true);
 // Guest buttons must not be disabled: controls are actions sent to host.
 const oldRender=render;render=function(){oldRender();if(mode==='online'&&peerRole==='guest'&&onlineReady){$('roll').disabled=game.turn!==-1||game.rolled||!!game.winner;$('end').disabled=game.turn!==-1||!game.rolled||legal(game).length>0||!!game.winner;$('undo').disabled=!(game.turn===-1&&guestCanUndo);}};
@@ -522,23 +522,24 @@ function cloudConnect(code,role,token){
  const session=++cloudSession;
  const wsUrl=cloudBase.replace(/^http/,'ws')+'/room/'+encodeURIComponent(code)+'?role='+role+(role==='host'?'&token='+encodeURIComponent(token):'');
  const ws=new WebSocket(wsUrl);cloudSocket=ws;
- let linked=false;const listeners={open:[],data:[],close:[],error:[]};
+ let linked=false;let readyPoll=null;const listeners={open:[],data:[],close:[],error:[]};
  const virtual={get open(){return linked&&ws.readyState===WebSocket.OPEN;},on(name,fn){(listeners[name]||[]).push(fn);return this;},send(message){cloudMessage(message);},close(){ws.close();}};
  const emit=(event,payload)=>{for(const fn of listeners[event]){try{fn(payload);}catch(e){console.error(e);}}};
  connection=virtual;peerRole=role;
- const fail=(message)=>{if(session!==cloudSession)return;showJoinError(message);clearTimeout(joinTimeout);$('joinQuick').disabled=false;$('joinQuick').textContent='Yeniden Dene';$('host').disabled=false;$('join').disabled=false;$('peerStatus').textContent=message;if(role==='guest')$('joinBanner').classList.remove('hide');};
- const connected=()=>{if(linked)return;linked=true;showJoinError('');emit('open');};
- ws.onopen=()=>{$('peerStatus').textContent=role==='host'?'Masa açıldı, arkadaş bekleniyor…':'Masa bağlantısı doğrulanıyor…';showJoinError('');};
+ const fail=(message)=>{if(session!==cloudSession)return;clearInterval(readyPoll);showJoinError(message);clearTimeout(joinTimeout);$('joinQuick').disabled=false;$('joinQuick').textContent='Yeniden Dene';$('host').disabled=false;$('join').disabled=false;$('peerStatus').textContent=message;if(role==='guest')$('joinBanner').classList.remove('hide');};
+ const connected=()=>{if(linked)return;linked=true;clearInterval(readyPoll);clearTimeout(joinTimeout);showJoinError('');emit('open');};
+ ws.onopen=()=>{$('peerStatus').textContent=role==='host'?'Masa açıldı, arkadaş bekleniyor…':'Masa bağlantısı doğrulanıyor…';showJoinError('');cloudMessage({type:'ready'});readyPoll=setInterval(()=>{if(session!==cloudSession||linked||ws.readyState!==WebSocket.OPEN){clearInterval(readyPoll);return;}cloudMessage({type:'ready'});},1800);};
  ws.onmessage=(ev)=>{if(session!==cloudSession)return;let msg;try{msg=JSON.parse(ev.data);}catch(_){return;}
-  if(msg.type==='connected'){if(role==='guest')connected();return;}
-  if(msg.type==='joined'){connected();if(role==='host')broadcast();return;}
-  if(msg.type==='peer_left'){$('peerStatus').textContent='Arkadaşın bağlantısı kesildi; yeniden katılmasını bekleyin.';if(role==='host'){linked=false;onlineReady=false;render();}return;}
+  if(msg.type==='connected'){cloudMessage({type:'ready'});return;}
+  if(msg.type==='presence'){if(msg.ready)connected();return;}
+  if(msg.type==='ready'||msg.type==='joined'){connected();if(role==='host')broadcast();return;}
+  if(msg.type==='peer_left'){linked=false;onlineReady=false;$('peerStatus').textContent='Arkadaşın bağlantısı kesildi; yeniden katılmasını bekleyin.';render();return;}
   if(msg.type==='state'||['move','roll','undo','end'].includes(msg.type))emit('data',msg);
  };
  ws.onerror=()=>fail('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');
- ws.onclose=e=>{if(session!==cloudSession)return;emit('close');if(!linked)fail(e.code===1006?'Masa bulunamadı veya bağlantı reddedildi. Yeni davet isteyin.':'Bağlantı kapandı ('+e.code+').');else{$('peerStatus').textContent='Bağlantı kesildi. Yeniden bağlantı kurulmalı.';}};
+ ws.onclose=e=>{clearInterval(readyPoll);if(session!==cloudSession)return;emit('close');if(!linked)fail(e.code===1006?'Masa bulunamadı veya bağlantı reddedildi. Yeni davet isteyin.':'Bağlantı kapandı ('+e.code+').');else{$('peerStatus').textContent='Bağlantı kesildi. Yeniden bağlantı kurulmalı.';}};
  setupConn(virtual,role);
- joinTimeout=setTimeout(()=>{if(session===cloudSession&&!linked){try{ws.close();}catch(_){}fail('Bağlantı zaman aşımına uğradı. Masa sahibinin oyunu açık tuttuğundan emin olun.');}},14000);
+ joinTimeout=setTimeout(()=>{if(session===cloudSession&&!linked&&role==='guest'){try{ws.close();}catch(_){}fail('Bağlantı zaman aşımına uğradı. Masa sahibinin oyunu açık tuttuğundan emin olun.');}},14000);
 }
 $('host').onclick=async()=>{
  cloudDisconnect();disconnect();mode='online';$('onlineBox').classList.add('on');
