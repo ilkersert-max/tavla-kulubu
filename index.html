@@ -547,11 +547,15 @@ $('host').onclick=async()=>{
   const response=await fetch(cloudBase+'/create',{method:'POST'});
   if(!response.ok)throw Error('Sunucu hatası: '+response.status);
   const data=await response.json();
-  if(!/^(?:[0-9]{6}|[a-f0-9]{10})$/.test(data.room)||!data.hostSecret)throw Error('Sunucudan geçersiz oda bilgisi geldi.');
-  const url=new URL(location.href);url.searchParams.set('room',data.room);url.searchParams.delete('v');
-  $('invite').value=url.href;$('roomCodeDisplay').value=data.room;$('copyCode').disabled=false;$('share').disabled=false;$('copyInvite').disabled=false;
-  cloudToken=data.hostSecret;sessionStorage.setItem('tk_host_'+data.room,data.hostSecret);
-  start();cloudConnect(data.room,'host',data.hostSecret);$('exitGame').classList.remove('hide');
+  const createdCode=String(data.room??'').trim().toLowerCase();
+  if(!/^(?:[0-9]{6}|[a-f0-9]{10})$/.test(createdCode)){
+    throw Error('Sunucunun döndürdüğü oda kodu uygun değil (biçim: '+(createdCode.length||0)+' karakter). Lütfen sayfayı yeniden yükleyin.');
+  }
+  if(typeof data.hostSecret!=='string'||data.hostSecret.length!==48)throw Error('Sunucu geçerli oda yetkisi döndürmedi. Yeniden deneyin.');
+  const url=new URL(location.href);url.searchParams.set('room',createdCode);url.searchParams.delete('v');
+  $('invite').value=url.href;$('roomCodeDisplay').value=createdCode;$('copyCode').disabled=false;$('share').disabled=false;$('copyInvite').disabled=false;
+  cloudToken=data.hostSecret;sessionStorage.setItem('tk_host_'+createdCode,data.hostSecret);
+  start();cloudConnect(createdCode,'host',data.hostSecret);$('exitGame').classList.remove('hide');
  }catch(e){$('host').disabled=false;$('peerStatus').textContent='Masa oluşturulamadı: '+e.message;}
 };
 $('join').onclick=()=>{
