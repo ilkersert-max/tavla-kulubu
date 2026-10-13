@@ -12,19 +12,19 @@ export default {
     if(!originAllowed(request.headers.get("origin")))return json({error:"origin_not_allowed"},403);
     if(url.pathname==="/health")return json({ok:true,service:"tavla-kulubu-server"});
     if(url.pathname==="/create"&&request.method==="POST"){
-      const room=randomString(5),hostSecret=randomString(24);
+      const room=String(100000 + (new DataView(crypto.getRandomValues(new Uint8Array(4)).buffer).getUint32(0) % 900000)),hostSecret=randomString(24);
       const roomObject=env.ROOM.getByName(room);
       const init=await roomObject.fetch(new Request("https://room.internal/init",{method:"POST",body:JSON.stringify({hostSecret})}));
       if(!init.ok)return json({error:"room_creation_failed"},502);
       return json({room,hostSecret,wsPath:"/room/"+room},201);
     }
-    const roomStatus=url.pathname.match(/^\/room\/([a-f0-9]{10})\/status$/);
+    const roomStatus=url.pathname.match(/^\/room\/((?:[0-9]{6}|[a-f0-9]{10}))\/status$/);
     if(roomStatus&&request.method==="GET"){
       const stub=env.ROOM.getByName(roomStatus[1]);
       const response=await stub.fetch(new Request("https://room.internal/status"));
       return json(await response.json(),response.status);
     }
-    const match=url.pathname.match(/^\/room\/([a-f0-9]{10})$/);
+    const match=url.pathname.match(/^\/room\/((?:[0-9]{6}|[a-f0-9]{10}))$/);
     if(match&&request.headers.get("upgrade")?.toLowerCase()==="websocket"){
       const stub=env.ROOM.getByName(match[1]);
       return stub.fetch(request);
