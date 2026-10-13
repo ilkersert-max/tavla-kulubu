@@ -1,0 +1,35 @@
+name: Cloudflare Tavla Sunucusu
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "cloudflare-server/**"
+      - ".github/workflows/deploy-cloudflare.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kaynak kodu al
+        uses: actions/checkout@v4
+
+      - name: Node.js kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Worker JavaScript kontrolü
+        run: node --check cloudflare-server/src/worker.js
+
+      - name: Cloudflare Worker yayınla
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: cloudflare-server
+          command: deploy
