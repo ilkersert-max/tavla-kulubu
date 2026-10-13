@@ -16,6 +16,11 @@ export default {
       const result=await registry.fetch(new Request("https://registry.internal/player/register",{method:"POST",body:await request.text()}));
       return json(await result.json(),result.status);
     }
+    if((url.pathname==="/player/friends"||url.pathname==="/player/friend/add")&&request.method==="POST"){
+      const registry=env.ROOM.getByName("__player_directory_v1__");
+      const result=await registry.fetch(new Request("https://registry.internal"+url.pathname,{method:"POST",body:await request.text()}));
+      return json(await result.json(),result.status);
+    }
     if(url.pathname==="/create"&&request.method==="POST"){
       const room=String(100000 + (new DataView(crypto.getRandomValues(new Uint8Array(4)).buffer).getUint32(0) % 900000)),hostSecret=randomString(24);
       const roomObject=env.ROOM.getByName(room);
@@ -65,6 +70,24 @@ export class TavlaRoom extends DurableObject {
         return {ok:true,name};
       });
       return new Response(JSON.stringify(result),{status:result.error==="name_taken"?409:200,headers:{"content-type":"application/json"}});
+    }
+    if((url.pathname==="/player/friends"||url.pathname==="/player/friend/add")&&request.method==="POST"){
+      let body;try{body=await request.json()}catch(_){return new Response(JSON.stringify({error:"invalid_json"}),{status:400})}
+      const token=String(body?.token||"");
+      const owner=/^[a-f0-9]{32}$/.test(token)?await this.ctx.storage.get("user:"+token):null;
+      if(!owner)return new Response(JSON.stringify({error:"unknown_player"}),{status:401});
+      if(url.pathname==="/player/friends"){
+        const ids=await this.ctx.storage.get("friends:"+token)||[];
+        const friends=[];
+        for(const id of ids){const person=await this.ctx.storage.get("user:"+id);if(person)friends.push({name:person.name});}
+        return new Response(JSON.stringify({ok:true,friends}),{headers:{"content-type":"application/json"}});
+      }
+      const name=String(body?.name||"").trim().toLocaleLowerCase("tr-TR");
+      const targetToken=await this.ctx.storage.get("name:"+name);
+      if(!targetToken||targetToken===token)return new Response(JSON.stringify({error:"player_not_found"}),{status:404});
+      const ids=await this.ctx.storage.get("friends:"+token)||[];
+      if(!ids.includes(targetToken)){ids.push(targetToken);await this.ctx.storage.put("friends:"+token,ids.slice(-200));}
+      return new Response(JSON.stringify({ok:true}),{headers:{"content-type":"application/json"}});
     }
     if(url.pathname==="/status"&&request.method==="GET"){
       const initialized=!!(await this.ctx.storage.get("hostSecret"));
