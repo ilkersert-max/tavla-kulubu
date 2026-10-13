@@ -621,7 +621,7 @@ let playerName=localStorage.getItem('tk_player_name')||'';
 async function playerApi(path,payload){const response=await fetch(cloudBase+'/player/'+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload),cache:'no-store'});const result=await response.json();return {status:response.status,...result};}
 function applyPlayerView(){const known=!!playerName;$('lobbyIdentity').hidden=known;$('playerTop').hidden=!known;$('lobbyMain').hidden=!known||lobbyPhase!=='main';$('lobbyOnlineMenu').hidden=!known||lobbyPhase!=='online';$('lobbyWaiting').hidden=!known||lobbyPhase!=='waiting';$('lobbyFriends').hidden=!known||lobbyPhase!=='friends';$('playerGreeting').textContent=known?'Merhaba, '+playerName:'';}
 $('savePlayerName').onclick=async()=>{
- const name=$('playerName').value.trim().replace(/\\s+/g,' ');
+ const name=$('playerName').value.trim().replace(/\s+/g,' ');
  if(name.length<2||name.length>20){$('nameSuggestion').textContent='2–20 karakterlik bir isim gir.';return;}
  $('savePlayerName').disabled=true;$('nameSuggestion').textContent='İsim kontrol ediliyor…';
  try{
@@ -629,7 +629,7 @@ $('savePlayerName').onclick=async()=>{
    const result=await playerApi('register',{name,token:playerToken});
    if(result.ok){playerName=result.name;localStorage.setItem('tk_player_token',playerToken);localStorage.setItem('tk_player_name',playerName);$('nameSuggestion').textContent='';applyPlayerView();}
    else if(result.error==='name_taken'){$('nameSuggestion').textContent='Bu isim kullanımda. Öneri: '+result.suggestion;$('playerName').value=result.suggestion||name;}
-   else $('nameSuggestion').textContent='İsim kaydedilemedi. Lütfen yeniden dene.';
+   else $('nameSuggestion').textContent='İsim kaydedilemedi ('+(result.error||result.status)+'). Tekrar dene.';
  }catch(_){$('nameSuggestion').textContent='Sunucuya erişilemiyor. İnternet bağlantını kontrol et.'}
  finally{$('savePlayerName').disabled=false;}
 };
