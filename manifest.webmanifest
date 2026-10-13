@@ -1,0 +1,21 @@
+{
+  "id": "/tavla-kulubu/",
+  "name": "Tavla Kulübü",
+  "short_name": "Tavla",
+  "description": "Telefon ve bilgisayarda tavla; arkadaşınla online veya bilgisayara karşı.",
+  "lang": "tr",
+  "start_url": "/tavla-kulubu/",
+  "scope": "/tavla-kulubu/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#102a2a",
+  "theme_color": "#102a2a",
+  "icons": [
+    {
+      "src": "./icons/tavla.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
