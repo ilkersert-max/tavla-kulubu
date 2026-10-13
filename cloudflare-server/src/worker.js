@@ -11,6 +11,11 @@ export default {
     if(request.method==="OPTIONS") return new Response(null,{status:204,headers:{"access-control-allow-origin":"https://ilkersert-max.github.io","access-control-allow-methods":"GET,POST,OPTIONS","access-control-allow-headers":"content-type"}});
     if(!originAllowed(request.headers.get("origin")))return json({error:"origin_not_allowed"},403);
     if(url.pathname==="/health")return json({ok:true,service:"tavla-kulubu-server"});
+    if(url.pathname==="/player/register"&&request.method==="POST"){
+      const registry=env.ROOM.getByName("__player_directory_v1__");
+      const result=await registry.fetch(new Request("https://registry.internal/player/register",{method:"POST",body:await request.text()}));
+      return json(await result.json(),result.status);
+    }
     if(url.pathname==="/create"&&request.method==="POST"){
       const room=String(100000 + (new DataView(crypto.getRandomValues(new Uint8Array(4)).buffer).getUint32(0) % 900000)),hostSecret=randomString(24);
       const roomObject=env.ROOM.getByName(room);
@@ -36,6 +41,31 @@ export default {
 export class TavlaRoom extends DurableObject {
   async fetch(request) {
     const url=new URL(request.url);
+    if(url.pathname==="/player/register"&&request.method==="POST"){
+      let data;try{data=await request.json()}catch(_){return new Response(JSON.stringify({error:"invalid_json"}),{status:400})}
+      const name=String(data?.name||"").normalize("NFC").trim().replace(/\\s+/g," ");
+      const token=String(data?.token||"");
+      if(name.length<2||name.length>20||!/^[\\p{L}\\p{N} _.-]+$/u.test(name)||!/^[a-f0-9]{32}$/.test(token))
+        return new Response(JSON.stringify({error:"invalid_name_or_token"}),{status:400});
+      const key=name.toLocaleLowerCase("tr-TR");
+      const result=await this.ctx.storage.transaction(async tx=>{
+        const previous=await tx.get("user:"+token);
+        const taken=await tx.get("name:"+key);
+        if(taken&&taken!==token){
+          let suggestion="";
+          for(let i=0;i<20;i++){
+            const candidate=(name.slice(0,15)+String(10+Math.floor(Math.random()*90)));
+            if(!await tx.get("name:"+candidate.toLocaleLowerCase("tr-TR"))){suggestion=candidate;break;}
+          }
+          return {error:"name_taken",suggestion};
+        }
+        if(previous&&previous.key!==key)await tx.delete("name:"+previous.key);
+        await tx.put("name:"+key,token);
+        await tx.put("user:"+token,{name,key});
+        return {ok:true,name};
+      });
+      return new Response(JSON.stringify(result),{status:result.error==="name_taken"?409:200,headers:{"content-type":"application/json"}});
+    }
     if(url.pathname==="/status"&&request.method==="GET"){
       const initialized=!!(await this.ctx.storage.get("hostSecret"));
       return new Response(JSON.stringify({exists:initialized,hostOnline:this.ctx.getWebSockets("host").length>0,guestOnline:this.ctx.getWebSockets("guest").length>0}),{headers:{"content-type":"application/json"}});
