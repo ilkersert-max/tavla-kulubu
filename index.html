@@ -338,7 +338,7 @@ let locked=false;try{if(opened&&screen.orientation?.lock){await screen.orientati
 syncFullscreen();$('landscapeStart').classList.toggle('hide',locked||matchMedia('(orientation:landscape)').matches);
 if(!locked&&!matchMedia('(orientation:landscape)').matches){$('landscapeStart').textContent='↻ Telefonu yan çevir';}
 };
-$('leaveFullscreen').onclick=async()=>{if(!document.fullscreenElement){$('leaveFullscreen').hidden=true;document.body.classList.remove('phoneLandscape');$('leaveFullscreen').title='Tam ekrandan çıkmak için önce tam ekran açılmalı';return;}try{screen.orientation?.unlock?.();}catch(_){}try{await document.exitFullscreen();}catch(e){$('leaveFullscreen').title='Tarayıcı çıkışı engelledi';}syncFullscreen();refreshPhoneLayout();};
+$('leaveFullscreen').onclick=async()=>{if(!document.fullscreenElement){$('leaveFullscreen').title='Bu görünüm tarayıcıya ait. Normal görünüme dönmek için telefonu dik çevirin.';alert('Tarayıcı tam ekranı açmamış. Normal görünüme dönmek için telefonu dik çevirin veya tarayıcının geri düğmesini kullanın.');return;}try{screen.orientation?.unlock?.();}catch(_){}try{await document.exitFullscreen();}catch(e){$('leaveFullscreen').title='Tarayıcı çıkışı engelledi';}syncFullscreen();refreshPhoneLayout();};
 $('landscapeStart').onclick=enterLandscape;
 $('fullScreen').onclick=async()=>{if(document.fullscreenElement){try{await screen.orientation?.unlock?.();await document.exitFullscreen();}catch(_){}syncFullscreen();}else await enterLandscape();};
 function updateLandscapeOffer(){const show=isMobileLike()&&!document.fullscreenElement&&!matchMedia('(orientation:landscape)').matches; $('landscapeStart').classList.toggle('hide',!show);}
