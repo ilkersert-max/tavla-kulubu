@@ -618,10 +618,10 @@ const lobby=$('simpleLobby'),lobbyMain=$('lobbyMain'),lobbyOnlineMenu=$('lobbyOn
 let lobbyPhase='main', lobbyTimer=null;
 function lobbyPhaseSet(phase){lobbyPhase=phase;lobbyMain.hidden=phase!=='main';lobbyOnlineMenu.hidden=phase!=='online';lobbyWaiting.hidden=phase!=='waiting';$('lobbyError').textContent='';}
 $('lobbyOnline').onclick=()=>lobbyPhaseSet('online');
-$('lobbyCreateMain').onclick=()=>{$('lobbyCreate').click();};
+$('lobbyCreateMain').onclick=()=>{lobbyPhaseSet('waiting');$('lobbyRoom').textContent='Oluşturuluyor…';$('lobbyWaitStatus').textContent='Masa hazırlanıyor…';$('host').click();};
 $('lobbyBot').onclick=()=>{lobby.hidden=true;switchMode('bot');};
 $('lobbyBack').onclick=()=>lobbyPhaseSet('main');
-$('lobbyCreate').onclick=()=>{lobbyPhaseSet('waiting');$('lobbyRoom').textContent='Oluşturuluyor…';$('lobbyWaitStatus').textContent='Masa hazırlanıyor…';$('host').click();};
+
 $('lobbyJoin').onclick=()=>{const code=normalizeRoomCode($('lobbyCode').value);if(!/^(?:[0-9]{6}|[a-f0-9]{10})$/.test(code)){$('lobbyError').textContent='6 rakamlı oda kodunu yaz.';return;}$('joinCodeDialog').value=code;$('joinCodeInput').value=code;$('join').click();$('lobbyError').textContent='Bağlanıyor…';};
 $('lobbyCode').addEventListener('keydown',e=>{if(e.key==='Enter')$('lobbyJoin').click()});
 $('lobbyWaitBack').onclick=()=>{cloudDisconnect();disconnect();lobbyPhaseSet('online');};
