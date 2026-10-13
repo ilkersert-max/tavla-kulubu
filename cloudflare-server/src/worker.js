@@ -48,9 +48,9 @@ export class TavlaRoom extends DurableObject {
     const url=new URL(request.url);
     if(url.pathname==="/player/register"&&request.method==="POST"){
       let data;try{data=await request.json()}catch(_){return new Response(JSON.stringify({error:"invalid_json"}),{status:400})}
-      const name=String(data?.name||"").normalize("NFC").trim().replace(/\\s+/g," ");
+      const name=String(data?.name||"").normalize("NFC").trim().replace(/\s+/g," ");
       const token=String(data?.token||"");
-      if(name.length<2||name.length>20||!/^[\\p{L}\\p{N} _.-]+$/u.test(name)||!/^[a-f0-9]{32}$/.test(token))
+      if(name.length<2||name.length>20||!/^[\p{L}\p{N} _.-]+$/u.test(name)||!/^[a-f0-9]{32}$/.test(token))
         return new Response(JSON.stringify({error:"invalid_name_or_token"}),{status:400});
       const key=name.toLocaleLowerCase("tr-TR");
       const result=await this.ctx.storage.transaction(async tx=>{
