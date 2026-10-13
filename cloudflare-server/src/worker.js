@@ -59,6 +59,10 @@ export class TavlaRoom extends DurableObject {
     const pair=new WebSocketPair();
     this.ctx.acceptWebSocket(pair[1],[role]);
     send(pair[1],{type:"connected",role,waiting:role==="host"});
+    // Notify both participants whenever two active sockets are present.
+    if(this.ctx.getWebSockets("host").length&&this.ctx.getWebSockets("guest").length){
+      for(const socket of this.ctx.getWebSockets())send(socket,{type:"ready"});
+    }
     if(role==="guest"){
       const state=await this.ctx.storage.get("gameState");
       if(state)send(pair[1],{type:"state",game:state});
@@ -72,6 +76,12 @@ export class TavlaRoom extends DurableObject {
     if(typeof message!=="string"||message.length>65536)return;
     let data;try{data=JSON.parse(message)}catch(_){return}
     const role=this.ctx.getTags(ws)[0];
+    if(data?.type==="ready"||data?.type==="ping"){
+      const ready=this.ctx.getWebSockets("host").length>0&&this.ctx.getWebSockets("guest").length>0;
+      send(ws,{type:"presence",ready,hostOnline:this.ctx.getWebSockets("host").length>0,guestOnline:this.ctx.getWebSockets("guest").length>0});
+      if(ready&&data.type==="ready")for(const socket of this.ctx.getWebSockets())send(socket,{type:"ready"});
+      return;
+    }
     if(role==="host"&&data?.type==="state"&&data.game&&typeof data.game==="object"){
       await this.ctx.storage.put("gameState",data.game);
       for(const other of this.ctx.getWebSockets("guest"))send(other,{type:"state",game:data.game,canUndo:!!data.canUndo});
