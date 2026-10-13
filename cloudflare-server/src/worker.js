@@ -16,7 +16,7 @@ export default {
       const result=await registry.fetch(new Request("https://registry.internal/player/register",{method:"POST",body:await request.text()}));
       return json(await result.json(),result.status);
     }
-    if((url.pathname==="/player/friends"||url.pathname==="/player/friend/add")&&request.method==="POST"){
+    if(["/player/friends","/player/friend/add","/player/presence","/player/invite","/player/invitations","/player/invite/respond"].includes(url.pathname)&&request.method==="POST"){
       const registry=env.ROOM.getByName("__player_directory_v1__");
       const result=await registry.fetch(new Request("https://registry.internal"+url.pathname,{method:"POST",body:await request.text()}));
       return json(await result.json(),result.status);
@@ -71,15 +71,49 @@ export class TavlaRoom extends DurableObject {
       });
       return new Response(JSON.stringify(result),{status:result.error==="name_taken"?409:200,headers:{"content-type":"application/json"}});
     }
-    if((url.pathname==="/player/friends"||url.pathname==="/player/friend/add")&&request.method==="POST"){
+    if(["/player/friends","/player/friend/add","/player/presence","/player/invite","/player/invitations","/player/invite/respond"].includes(url.pathname)&&request.method==="POST"){
       let body;try{body=await request.json()}catch(_){return new Response(JSON.stringify({error:"invalid_json"}),{status:400})}
       const token=String(body?.token||"");
       const owner=/^[a-f0-9]{32}$/.test(token)?await this.ctx.storage.get("user:"+token):null;
       if(!owner)return new Response(JSON.stringify({error:"unknown_player"}),{status:401});
+      if(url.pathname==="/player/presence"){
+        await this.ctx.storage.put("seen:"+token,Date.now());
+        return new Response(JSON.stringify({ok:true}),{headers:{"content-type":"application/json"}});
+      }
+      if(url.pathname==="/player/invite"){
+        const targetName=String(body?.name||"").trim().toLocaleLowerCase("tr-TR");
+        const targetToken=await this.ctx.storage.get("name:"+targetName);
+        const code=String(body?.room||"");
+        if(!targetToken||targetToken===token)return new Response(JSON.stringify({error:"player_not_found"}),{status:404});
+        const mine=await this.ctx.storage.get("friends:"+token)||[];
+        if(!mine.includes(targetToken))return new Response(JSON.stringify({error:"not_in_friends"}),{status:403});
+        if(!/^(?:[0-9]{6}|[a-f0-9]{10})$/.test(code))return new Response(JSON.stringify({error:"invalid_room"}),{status:400});
+        const id=randomString(12);
+        const pending=await this.ctx.storage.get("invites:"+targetToken)||[];
+        pending.push({id,from:owner.name,fromToken:token,room:code,created:Date.now(),status:"pending"});
+        await this.ctx.storage.put("invites:"+targetToken,pending.filter(x=>Date.now()-x.created<86400000).slice(-30));
+        return new Response(JSON.stringify({ok:true}),{headers:{"content-type":"application/json"}});
+      }
+      if(url.pathname==="/player/invitations"){
+        const pending=(await this.ctx.storage.get("invites:"+token)||[]).filter(x=>Date.now()-x.created<86400000);
+        const incoming=pending.filter(x=>x.status==="pending").map(x=>({id:x.id,from:x.from,room:x.room,created:x.created}));
+        return new Response(JSON.stringify({ok:true,invitations:incoming}),{headers:{"content-type":"application/json"}});
+      }
+      if(url.pathname==="/player/invite/respond"){
+        const id=String(body?.id||"");
+        const choice=String(body?.choice||"");
+        if(choice!=="accept"&&choice!=="reject")return new Response(JSON.stringify({error:"invalid_choice"}),{status:400});
+        const pending=await this.ctx.storage.get("invites:"+token)||[];
+        const invite=pending.find(x=>x.id===id&&x.status==="pending");
+        if(!invite)return new Response(JSON.stringify({error:"invite_not_found"}),{status:404});
+        invite.status=choice;
+        await this.ctx.storage.put("invites:"+token,pending);
+        return new Response(JSON.stringify({ok:true,room:choice==="accept"?invite.room:null}),{headers:{"content-type":"application/json"}});
+      }
       if(url.pathname==="/player/friends"){
         const ids=await this.ctx.storage.get("friends:"+token)||[];
         const friends=[];
-        for(const id of ids){const person=await this.ctx.storage.get("user:"+id);if(person)friends.push({name:person.name});}
+        for(const id of ids){const person=await this.ctx.storage.get("user:"+id);if(person)friends.push({name:person.name,online:(Date.now()-(await this.ctx.storage.get("seen:"+id)||0))<75000});}
         return new Response(JSON.stringify({ok:true,friends}),{headers:{"content-type":"application/json"}});
       }
       const name=String(body?.name||"").trim().toLocaleLowerCase("tr-TR");
