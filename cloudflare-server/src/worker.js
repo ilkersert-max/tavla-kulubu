@@ -43,6 +43,7 @@ export class TavlaRoom extends DurableObject {
     const secret=await this.ctx.storage.get("hostSecret");
     if(!secret)return new Response("room_not_found",{status:404});
     if(role==="host"&&url.searchParams.get("token")!==secret)return new Response("unauthorized",{status:401});
+    if(role==="guest"&&this.ctx.getWebSockets("host").length===0)return new Response("host_offline",{status:409});
     const existing=this.ctx.getWebSockets(role);
     for(const ws of existing){try{ws.close(4001,"new_session");}catch(_){}}
     const pair=new WebSocketPair();
