@@ -481,7 +481,7 @@ document.addEventListener('fullscreenchange',()=>requestAnimationFrame(refreshPh
 requestAnimationFrame(refreshPhoneLayout);
 const startPrompt=$('startFullscreenPrompt');
 // Detach invitation overlay from the board's overflow/transform stacking contexts.
-const invitationOverlay=$('joinBanner');document.body.appendChild(invitationOverlay);
+const invitationOverlay=$('joinBanner');fullscreenShell.appendChild(invitationOverlay);
 const mobileStartup=()=>('ontouchstart' in window||navigator.maxTouchPoints>0)&&Math.min(window.innerWidth,window.innerHeight)<900;
 if(mobileStartup()&&!new URL(location.href).searchParams.has('room'))startPrompt.classList.remove('hide');
 if(new URL(location.href).searchParams.has('room')){invitationOverlay.classList.remove('hide');$('joinQuick').textContent='Katıl ve Yatay Oyna';}
