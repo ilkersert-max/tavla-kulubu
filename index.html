@@ -516,16 +516,16 @@ const cloudBase='https://tavla-kulubu-server.ilkersert.workers.dev';
 function showJoinError(message){const element=$('joinErrorText');if(element)element.textContent=message||'';}
 
 const normalizeRoomCode=(value)=>String(value||'').trim().toLowerCase().replace(/[^a-f0-9]/g,'');
-let cloudSocket=null,cloudToken=null,cloudSession=0;
+let cloudSocket=null,cloudToken=null,cloudSession=0,retryHandle=null;
 function cloudMessage(message){if(cloudSocket?.readyState===WebSocket.OPEN)cloudSocket.send(JSON.stringify(message));}
 function cloudDisconnect(){
- cloudSession++;clearTimeout(joinTimeout);joinTimeout=null;
+ cloudSession++;clearTimeout(retryHandle);retryHandle=null;clearTimeout(joinTimeout);joinTimeout=null;
  if(cloudSocket){try{cloudSocket.close(1000,'leave');}catch(_){}cloudSocket=null;}
  connection=null;onlineReady=false;peerRole=null;guestCanUndo=false;
  $('host').disabled=false;$('join').disabled=false;
  $('exitGame').classList.add('hide');
 }
-function cloudConnect(code,role,token){
+function cloudConnect(code,role,token,retries=0){
  const session=++cloudSession;
  const wsUrl=cloudBase.replace(/^http/,'ws')+'/room/'+encodeURIComponent(code)+'?role='+role+(role==='host'?'&token='+encodeURIComponent(token):'');
  const ws=new WebSocket(wsUrl);cloudSocket=ws;
@@ -544,7 +544,7 @@ function cloudConnect(code,role,token){
   if(msg.type==='state'||['move','roll','undo','end'].includes(msg.type))emit('data',msg);
  };
  ws.onerror=()=>fail('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');
- ws.onclose=e=>{clearInterval(readyPoll);if(session!==cloudSession)return;emit('close');if(!linked)fail(e.code===1006?'Masa bulunamadı veya bağlantı reddedildi. Yeni davet isteyin.':'Bağlantı kapandı ('+e.code+').');else{$('peerStatus').textContent='Bağlantı kesildi. Yeniden bağlantı kurulmalı.';}};
+ ws.onclose=e=>{clearInterval(readyPoll);if(session!==cloudSession)return;emit('close');if(!linked)fail(e.code===1006?'Masa bulunamadı veya bağlantı reddedildi. Yeni davet isteyin.':'Bağlantı kapandı ('+e.code+').');else{$('peerStatus').textContent='Bağlantı kesildi. Yeniden bağlanılıyor…';if(retries<5)retryHandle=setTimeout(()=>{if(session===cloudSession&&mode==='online')cloudConnect(code,role,token,retries+1);},1500*(retries+1));}};
  setupConn(virtual,role);
  joinTimeout=setTimeout(()=>{if(session===cloudSession&&!linked&&role==='guest'){try{ws.close();}catch(_){}fail('Bağlantı zaman aşımına uğradı. Masa sahibinin oyunu açık tuttuğundan emin olun.');}},14000);
 }
