@@ -373,6 +373,7 @@ const prevSwitchMode=switchMode;
 $('botMode').onclick=()=>{cloudDisconnect();switchMode('bot');};
 $('onlineMode').onclick=()=>{cloudDisconnect();switchMode('online');$('joinBanner').classList.remove('hide');$('joinQuick').textContent='Oyuna Katıl';};
 
+const fullscreenShell=document.querySelector('.shell');
 const startPrompt=$('startFullscreenPrompt');
 // Detach invitation overlay from the board's overflow/transform stacking contexts.
 const invitationOverlay=$('joinBanner');fullscreenShell.appendChild(invitationOverlay);$('quickHost').onclick=()=>{$('joinBanner').classList.add('hide');$('host').click();};
