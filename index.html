@@ -131,7 +131,19 @@ body.is-mobile.is-landscape .actionDock{position:relative!important;display:grid
 body.is-mobile.is-landscape .actionDock .dockBtn{height:42px!important;min-height:42px!important;min-width:0!important;padding:2px!important}
 body.is-mobile.is-landscape .actionDock .dockBtnLabel{display:none!important}
 body.is-mobile.is-portrait .shell{max-height:var(--app-h,100dvh);overflow-y:auto}
-body.is-fullscreen:not(.is-mobile) .boardbox canvas{max-height:calc(var(--app-h,100dvh) - 160px);object-fit:contain}
+/* Desktop fullscreen: fit the entire 1000x720 board, including footer controls, within the viewport. */
+body.is-fullscreen:not(.is-mobile) .shell{height:var(--app-h,100dvh)!important;max-height:var(--app-h,100dvh)!important;overflow:hidden!important;display:flex;flex-direction:column;padding:5px 10px!important}
+body.is-fullscreen:not(.is-mobile) .top{flex:0 0 auto;padding:2px 0}
+body.is-fullscreen:not(.is-mobile) .menu{flex:0 0 auto;margin:4px 0!important}
+body.is-fullscreen:not(.is-mobile) .layout{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:10px;overflow:hidden}
+body.is-fullscreen:not(.is-mobile) .boardStage{align-items:center;gap:5px;min-width:0;min-height:0;overflow:hidden}
+body.is-fullscreen:not(.is-mobile) .turnBanner{width:100%;flex:0 0 auto;padding:6px 12px}
+body.is-fullscreen:not(.is-mobile) .boardbox{box-sizing:border-box;width:min(100%,calc((var(--app-h,100dvh) - 225px) * 1.388889 + 16px));max-height:calc(var(--app-h,100dvh) - 210px);padding:4px;border-width:5px;margin:0 auto;flex:0 1 auto;overflow:hidden}
+body.is-fullscreen:not(.is-mobile) .boardbox canvas{display:block;width:100%!important;height:auto!important;min-height:0!important;max-height:calc(var(--app-h,100dvh) - 225px)!important;aspect-ratio:1000/720!important;object-fit:fill!important}
+body.is-fullscreen:not(.is-mobile) .actionDock{flex:0 0 auto;width:100%;gap:6px}
+body.is-fullscreen:not(.is-mobile) .actionDock .dockBtn{min-height:42px;padding:4px 8px}
+body.is-fullscreen:not(.is-mobile) aside{min-height:0;overflow:auto;align-content:start}
+@media (min-width:900px) and (max-height:650px){body.is-fullscreen:not(.is-mobile) .top .brand{font-size:22px}body.is-fullscreen:not(.is-mobile) .boardbox{width:min(100%,calc((var(--app-h,100dvh) - 180px) * 1.388889 + 16px));max-height:calc(var(--app-h,100dvh) - 165px)}body.is-fullscreen:not(.is-mobile) .boardbox canvas{max-height:calc(var(--app-h,100dvh) - 180px)!important}}
 #leaveFullscreen{position:fixed!important;top:calc(env(safe-area-inset-top) + 7px)!important;right:calc(env(safe-area-inset-right) + 7px)!important;z-index:2147483000!important;display:flex;align-items:center;justify-content:center}
 #leaveFullscreen[hidden]{display:none!important}
 .rotateHint{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:2147483600;background:#061414e9;padding:20px}.rotateHint.show{display:flex}
