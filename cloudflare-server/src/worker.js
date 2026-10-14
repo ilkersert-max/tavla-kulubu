@@ -169,6 +169,11 @@ export class TavlaRoom extends DurableObject {
       if(ready&&data.type==="ready")for(const socket of this.ctx.getWebSockets())send(socket,{type:"ready"});
       return;
     }
+    if(data?.type==="identity"&&typeof data.name==="string"){
+      const value=data.name.trim().slice(0,20);
+      if(value)for(const other of this.ctx.getWebSockets())send(other,{type:"identity",role,name:value});
+      return;
+    }
     if(role==="host"&&data?.type==="state"&&data.game&&typeof data.game==="object"){
       await this.ctx.storage.put("gameState",data.game);
       for(const other of this.ctx.getWebSockets("guest"))send(other,{type:"state",game:data.game,canUndo:!!data.canUndo});
