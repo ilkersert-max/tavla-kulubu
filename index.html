@@ -302,6 +302,23 @@ body.is-mobile.is-landscape #leaveFullscreen:not([hidden]){
  flex:0 0 auto!important;margin:0 0 0 8px!important;
  order:2!important;
 }
+
+/* Compact landscape sidebar V2 */
+body.is-mobile.is-landscape .layout{display:grid!important;grid-template-columns:clamp(148px,19vw,230px) minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr)!important;gap:5px!important}
+body.is-mobile.is-landscape .boardStage{grid-column:2!important;grid-row:1!important;height:100%!important;min-width:0!important}
+body.is-mobile.is-landscape aside{display:flex!important;grid-column:1!important;grid-row:1!important;flex-direction:column!important;gap:5px!important;height:100%!important;min-height:0!important;min-width:0!important;overflow:hidden!important;padding:0!important}
+body.is-mobile.is-landscape aside>.panel{display:none!important}
+body.is-mobile.is-landscape aside>.panel:first-of-type{display:block!important;flex:0 0 auto!important;min-height:0!important;max-height:40%!important;overflow:hidden!important;padding:7px!important;margin:0!important}
+body.is-mobile.is-landscape aside>.panel:first-of-type .diceStage,body.is-mobile.is-landscape aside>.panel:first-of-type #remaining{display:none!important}
+body.is-mobile.is-landscape aside>.panel:first-of-type .scores{display:grid!important;grid-template-columns:1fr 1fr!important;gap:4px!important}
+body.is-mobile.is-landscape aside>.panel:first-of-type .score{min-width:0!important;padding:4px!important;font-size:clamp(11px,1.8vw,15px)!important;overflow:hidden!important}
+body.is-mobile.is-landscape aside>.panel:first-of-type .score strong{font-size:clamp(16px,3vw,25px)!important}
+body.is-mobile.is-landscape aside>.panel:first-of-type .title{font-size:clamp(13px,2vw,18px)!important;margin-bottom:5px!important}
+body.is-mobile.is-landscape aside>.panel:first-of-type .status{font-size:12px!important;margin:4px 0 0!important}
+body.is-mobile.is-landscape #sideFriends{display:none!important}
+body.is-mobile.is-landscape .actionDock{flex:0 0 auto!important;margin-top:auto!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;min-height:92px!important}
+body.is-mobile.is-landscape .actionDock .dockBtn{height:42px!important;min-height:42px!important}
+body.is-mobile.is-landscape #leaveFullscreen:not([hidden]){position:relative!important;top:auto!important;right:auto!important;left:auto!important;z-index:30!important;margin:2px!important;flex-shrink:0!important}
 </style></head><body><div id="simpleLobby" role="dialog" aria-label="Tavla Kulübü giriş" class="simpleLobby">
 <div class="simpleLobbyCard"><div class="simpleLobbyBrand">◈ Tavla <em>Kulübü</em></div>
 <p class="simpleLobbyLead">Nasıl oynamak istersin?</p>
@@ -351,9 +368,11 @@ function arrangeLandscapeControls(enabled){
  }
  landscapeDockMounted=enabled;
 }
+const compactDock=document.querySelector('.actionDock'),compactDockHome=compactDock.parentNode,compactDockNext=compactDock.nextSibling,compactExit=$('leaveFullscreen'),compactExitHome=compactExit.parentNode,compactExitNext=compactExit.nextSibling;
+function alignCompactControls(){const compact=document.body.classList.contains('is-mobile')&&document.body.classList.contains('is-landscape');const sidebar=document.querySelector('aside');if(compact){if(compactDock.parentNode!==sidebar)sidebar.appendChild(compactDock);if(compactExit.parentNode!==sidebar)sidebar.insertBefore(compactExit,compactDock);}else{if(compactDock.parentNode!==compactDockHome)compactDockHome.insertBefore(compactDock,compactDockNext);if(compactExit.parentNode!==compactExitHome)compactExitHome.insertBefore(compactExit,compactExitNext);}}
 const Display=(()=>{const doc=document,root=doc.documentElement,isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),touch='ontouchstart'in window||navigator.maxTouchPoints>0;
 const isMobileLike=()=>touch&&Math.min(screen.width,screen.height)<900,fs=()=>doc.fullscreenElement||doc.webkitFullscreenElement||null;let raf=0,wantsRotation=false,skipHint=false;const callbacks=new Set();
-function applyLayout(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;const vp=visualViewport,w=Math.round(vp?.width||innerWidth),h=Math.round(vp?.height||innerHeight),landscape=w>h,mobile=isMobileLike();root.style.setProperty('--app-w',w+'px');root.style.setProperty('--app-h',h+'px');arrangeLandscapeControls(mobile&&landscape);for(const [k,v]of [['is-mobile',mobile],['is-ios',isIOS],['is-touch',touch],['is-landscape',landscape],['is-portrait',!landscape],['is-fullscreen',!!fs()]])doc.body.classList.toggle(k,v);$('landscapeStart').classList.toggle('hide',!mobile||landscape);$('leaveFullscreen').hidden=!fs();const lobby=doc.getElementById('simpleLobby');$('rotateHint').classList.toggle('show',wantsRotation&&mobile&&!landscape&&!skipHint&&!!lobby?.hidden);});}
+function applyLayout(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;const vp=visualViewport,w=Math.round(vp?.width||innerWidth),h=Math.round(vp?.height||innerHeight),landscape=w>h,mobile=isMobileLike();root.style.setProperty('--app-w',w+'px');root.style.setProperty('--app-h',h+'px');arrangeLandscapeControls(mobile&&landscape);for(const [k,v]of [['is-mobile',mobile],['is-ios',isIOS],['is-touch',touch],['is-landscape',landscape],['is-portrait',!landscape],['is-fullscreen',!!fs()]])doc.body.classList.toggle(k,v);alignCompactControls();$('landscapeStart').classList.toggle('hide',!mobile||landscape);$('leaveFullscreen').hidden=!fs();const lobby=doc.getElementById('simpleLobby');$('rotateHint').classList.toggle('show',wantsRotation&&mobile&&!landscape&&!skipHint&&!!lobby?.hidden);});}
 async function enterFS(){const target=doc.documentElement,fn=target.requestFullscreen||target.webkitRequestFullscreen;if(!fn)return false;try{await fn.call(target);return!!fs()}catch(_){return false}}
 async function exitFS(){try{if(doc.exitFullscreen)await doc.exitFullscreen();else if(doc.webkitExitFullscreen)await doc.webkitExitFullscreen();return true}catch(_){return false}}
 async function enterPlayMode({preferLandscape=true}={}){wantsRotation=preferLandscape;skipHint=false;const full=await enterFS();let locked=false;if(full&&preferLandscape&&isMobileLike()&&!isIOS){try{await screen.orientation?.lock?.('landscape');locked=true}catch(_){}}applyLayout();return{fullscreen:full,locked,landscape:innerWidth>innerHeight}}
