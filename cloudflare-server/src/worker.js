@@ -183,6 +183,9 @@ export class TavlaRoom extends DurableObject {
   }
   async webSocketClose(ws) {
     const role=this.ctx.getTags(ws)[0];
+    if(role!=="host"&&role!=="guest")return;
+    // Replacement sockets must not make a still-connected opponent appear offline.
+    if(this.ctx.getWebSockets(role).some(other=>other!==ws&&other.readyState===WebSocket.OPEN))return;
     const opposite=role==="host"?"guest":"host";
     for(const other of this.ctx.getWebSockets(opposite))send(other,{type:"peer_left",role});
   }
