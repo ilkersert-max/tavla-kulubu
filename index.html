@@ -361,10 +361,18 @@ const Display=(()=>{
     for(const cb of listeners)cb(now);
   };
   for(const name of ['fullscreenchange','webkitfullscreenchange'])doc.addEventListener(name,onFSChange);
-  window.addEventListener('resize',applyLayout,{passive:true});
-  window.addEventListener('orientationchange',applyLayout,{passive:true});
-  window.addEventListener('pageshow',applyLayout,{passive:true});
-  window.visualViewport?.addEventListener('resize',applyLayout,{passive:true});
+  // Re-measure iPhone's visible viewport after browser bars and rotation settle.
+  let viewportSettling=[];
+  function stabilizeViewport(){
+    viewportSettling.forEach(clearTimeout);viewportSettling=[];
+    applyLayout();
+    for(const delay of [120,320,650])viewportSettling.push(setTimeout(applyLayout,delay));
+  }
+  window.addEventListener('resize',stabilizeViewport,{passive:true});
+  window.addEventListener('orientationchange',stabilizeViewport,{passive:true});
+  window.addEventListener('pageshow',stabilizeViewport,{passive:true});
+  window.addEventListener('focus',applyLayout,{passive:true});
+  window.visualViewport?.addEventListener('resize',stabilizeViewport,{passive:true});
   window.visualViewport?.addEventListener('scroll',applyLayout,{passive:true});
   return {
     isFullscreen:()=>!!fs()||softMode,isNativeFullscreen:()=>!!fs(),
