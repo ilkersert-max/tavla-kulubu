@@ -192,6 +192,16 @@ body.is-mobile.is-landscape #leaveFullscreen:not([hidden]){position:relative!imp
 .fullscreenHelpActions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .fullscreenHelpActions button{min-height:32px;padding:5px 9px;font-size:12px}
 body.is-mobile.is-landscape #leaveFullscreen:not([hidden]){display:flex!important}
+
+/* iPhone Safari viewport fallback: use the visible viewport without pretending browser UI is fullscreen. */
+body.is-mobile.is-landscape.is-immersive .shell,body.is-mobile.is-landscape:not(.is-immersive) .shell{height:var(--app-h,100dvh)!important;max-height:var(--app-h,100dvh)!important}
+body.is-mobile.is-landscape .layout{min-height:0!important}
+body.is-mobile.is-landscape .boardbox{min-height:0!important}
+body.is-mobile.is-landscape .boardbox canvas{min-height:0!important}
+body.is-mobile.is-landscape aside{min-height:0!important}
+body.is-mobile.is-landscape .actionDock{flex-shrink:0!important}
+body.is-mobile.is-landscape #fullscreenHelp{max-height:min(40dvh,150px);overflow:auto}
+@media(max-height:390px){body.is-mobile.is-landscape .layout>aside>.panel:first-of-type{max-height:32%!important}body.is-mobile.is-landscape .actionDock{min-height:84px!important}body.is-mobile.is-landscape .actionDock .dockBtn{height:38px!important;min-height:38px!important}}
 </style></head><body><div id="simpleLobby" role="dialog" aria-label="Tavla Kulübü giriş" class="simpleLobby">
 <div class="simpleLobbyCard"><div class="simpleLobbyBrand">◈ Tavla <em>Kulübü</em></div>
 <p class="simpleLobbyLead">Nasıl oynamak istersin?</p>
@@ -257,7 +267,7 @@ const Display=(()=>{
     $('fullscreenHelpText').textContent=message;
     box.hidden=false;
     clearTimeout(noticeTimeout);
-    noticeTimeout=setTimeout(()=>{box.hidden=true;},16000);
+    noticeTimeout=setTimeout(()=>{box.hidden=true;},6500);
   }
   function diagnosis(){
     const v=window.visualViewport;
@@ -265,7 +275,7 @@ const Display=(()=>{
       browser:navigator.userAgent,ios:isIOS,standalone:standalone(),
       fullscreenAPI:fsSupported(),fullscreenActive:!!fs(),wideMode:softMode,
       lastFullscreenResult:reason,
-      viewport:[Math.round(v?.width||innerWidth),Math.round(v?.height||innerHeight)],
+      viewport:[Math.round(v?.width||innerWidth),Math.round(v?.height||innerHeight)],viewportOffset:[Math.round(v?.offsetLeft||0),Math.round(v?.offsetTop||0)],
       innerWindow:[innerWidth,innerHeight],orientation:screen.orientation?.type||'unknown'
     };
   }
@@ -274,13 +284,14 @@ const Display=(()=>{
     raf=requestAnimationFrame(()=>{
       raf=0;
       const v=window.visualViewport,w=Math.round(v?.width||innerWidth),h=Math.round(v?.height||innerHeight);
-      const landscape=w>h,isMobile=mobile(),native=!!fs();
+      const landscape=w>h,isMobile=mobile(),native=!!fs(),isStand=standalone();
       root.style.setProperty('--app-w',w+'px');
       root.style.setProperty('--app-h',h+'px');
+      root.style.setProperty('--app-top',Math.round(v?.offsetTop||0)+'px');
       for(const [name,on] of [
         ['is-mobile',isMobile],['is-ios',isIOS],['is-touch',touch],
         ['is-landscape',landscape],['is-portrait',!landscape],
-        ['is-fullscreen',native],['is-immersive',native||softMode],['is-standalone',standalone()]
+        ['is-fullscreen',native],['is-immersive',native||softMode||isStand],['is-standalone',isStand]
       ])doc.body.classList.toggle(name,on);
       alignCompactControls(isMobile&&landscape);
       $('landscapeStart').classList.toggle('hide',!isMobile||landscape);
@@ -309,8 +320,10 @@ const Display=(()=>{
   }
   async function enterPlayMode({preferLandscape=true}={}){
     wantsRotation=preferLandscape;skipHint=false;
-    const full=await enterFS();
-    softMode=!full;
+    // Standalone iOS opens without Safari browser chrome; do not invoke unsupported fullscreen API.
+    const full=standalone()?false:await enterFS();
+    softMode=!full&&!standalone();
+    if(standalone())reason='standalone web app';
     let locked=false;
     // iOS Safari Screen Orientation Lock API'sini desteklemez.
     if(full&&preferLandscape&&mobile()&&!isIOS){
