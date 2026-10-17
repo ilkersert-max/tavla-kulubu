@@ -463,7 +463,7 @@ const Display=(()=>{
     $('fullscreenHelp').hidden=true;
     try{screen.orientation?.unlock?.();}catch(_){}
     if(fs()){
-      try{const exit=doc.exitFullscreen||doc.webkitExitFullscreen;if(exit)await exit.call(doc);}catch(_){}
+      try{const exit=(doc.webkitFullscreenElement&&!doc.fullscreenElement?doc.webkitExitFullscreen:doc.exitFullscreen)||doc.webkitExitFullscreen;if(exit)await exit.call(doc);}catch(_){}
     }
     applyLayout();
   }
