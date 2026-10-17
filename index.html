@@ -202,6 +202,13 @@ body.is-mobile.is-landscape aside{min-height:0!important}
 body.is-mobile.is-landscape .actionDock{flex-shrink:0!important}
 body.is-mobile.is-landscape #fullscreenHelp{max-height:min(40dvh,150px);overflow:auto}
 @media(max-height:390px){body.is-mobile.is-landscape .layout>aside>.panel:first-of-type{max-height:32%!important}body.is-mobile.is-landscape .actionDock{min-height:84px!important}body.is-mobile.is-landscape .actionDock .dockBtn{height:38px!important;min-height:38px!important}}
+
+/* iPhone Safari visible viewport guard */
+body.is-ios.is-mobile.is-landscape .shell{height:var(--app-h,100dvh)!important;max-height:var(--app-h,100dvh)!important;overflow:hidden!important}
+body.is-ios.is-mobile.is-landscape .layout{height:100%!important;min-height:0!important;overflow:hidden!important}
+body.is-ios.is-mobile.is-landscape .layout>.boardStage{min-height:0!important;overflow:hidden!important}
+body.is-ios.is-mobile.is-landscape .layout>.boardStage .boardbox{min-height:0!important;overflow:hidden!important}
+body.is-ios.is-mobile.is-landscape .layout>.boardStage canvas{display:block;max-height:100%!important}
 </style></head><body><div id="simpleLobby" role="dialog" aria-label="Tavla Kulübü giriş" class="simpleLobby">
 <div class="simpleLobbyCard"><div class="simpleLobbyBrand">◈ Tavla <em>Kulübü</em></div>
 <p class="simpleLobbyLead">Nasıl oynamak istersin?</p>
