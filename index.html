@@ -319,6 +319,13 @@ body.is-mobile.is-landscape #sideFriends{display:none!important}
 body.is-mobile.is-landscape .actionDock{flex:0 0 auto!important;margin-top:auto!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;min-height:92px!important}
 body.is-mobile.is-landscape .actionDock .dockBtn{height:42px!important;min-height:42px!important}
 body.is-mobile.is-landscape #leaveFullscreen:not([hidden]){position:relative!important;top:auto!important;right:auto!important;left:auto!important;z-index:30!important;margin:2px!important;flex-shrink:0!important}
+
+/* Fullscreen capability feedback; never claim that Safari chrome is hidden. */
+#fullscreenHelp{position:fixed;z-index:2147483500;right:max(10px,env(safe-area-inset-right));bottom:max(10px,env(safe-area-inset-bottom));width:min(395px,calc(100vw - 20px));padding:12px;background:#112b29f5;color:#f5dfb9;border:1px solid #d4af76;border-radius:13px;box-shadow:0 12px 35px #0009;font-size:13px;line-height:1.4}
+#fullscreenHelp[hidden]{display:none!important}
+.fullscreenHelpActions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.fullscreenHelpActions button{min-height:32px;padding:5px 9px;font-size:12px}
+body.is-mobile.is-landscape #leaveFullscreen:not([hidden]){display:flex!important}
 </style></head><body><div id="simpleLobby" role="dialog" aria-label="Tavla Kulübü giriş" class="simpleLobby">
 <div class="simpleLobbyCard"><div class="simpleLobbyBrand">◈ Tavla <em>Kulübü</em></div>
 <p class="simpleLobbyLead">Nasıl oynamak istersin?</p>
@@ -326,7 +333,7 @@ body.is-mobile.is-landscape #leaveFullscreen:not([hidden]){position:relative!imp
 <div id="lobbyOnlineMenu" hidden><label class="lobbyLabel" for="lobbyCode">Arkadaşının masa kodu</label><div class="lobbyCodeRow"><input id="lobbyCode" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="6 rakam"><button id="lobbyJoin">Katıl</button></div><button id="lobbyBack" class="lobbyPlain">← Geri</button></div>
 <div id="lobbyWaiting" hidden><div class="lobbyLabel">Masa kodun</div><div class="lobbyBigCode" id="lobbyRoom">Oluşturuluyor…</div><button id="lobbyCopy" class="lobbyPrimary" disabled>⧉ Kodu Kopyala</button><button id="lobbyShare" class="lobbySecondary" disabled>↗ Davet Gönder</button><p id="lobbyWaitStatus" class="lobbyWaitStatus">Arkadaşın bekleniyor…</p><button id="lobbyWaitBack" class="lobbyPlain">← Geri</button></div>
 <button id="lobbySettingsButton" class="lobbyPlain" type="button">⚙ Ayarlar</button><div id="lobbySettings" hidden><label class="lobbyLabel" for="lobbyControl">Kontroller</label><select id="lobbyControl" class="settingSelect"><option value="dice">Zarın yanında</option><option value="below">Tablanın altında</option></select><label class="lobbyLabel" for="lobbyGoal">Maç hedefi</label><select id="lobbyGoal" class="settingSelect"><option value="1">1 sayı</option><option value="3">3 sayı</option><option value="5">5 sayı</option><option value="7">7 sayı</option></select><label class="lobbyLabel" for="lobbyTheme">Tabla fonu</label><select id="lobbyTheme" style="width:100%;padding:13px;border-radius:12px;background:#082826;color:#f6e2c3;border:1px solid #74948b"><option value="soft">Soft · Kum ve adaçayı</option><option value="classic">Klasik ahşap</option><option value="dark">Gece</option><option value="ivory">Fildişi &amp; Ceviz</option><option value="ocean">Okyanus Mavisi</option><option value="forest">Orman Yeşili</option><option value="slate">Kül Grisi</option><option value="emerald">Canlı Zümrüt</option><option value="ruby">Yakut Altın</option><option value="sapphire">Gece Safiri</option><option value="turquoise">Parlak Turkuaz</option><option value="royal">Kraliyet Moru</option><option value="walnut">Parlak Ceviz</option><option value="neon">Neon Şehir</option><option value="deco">Art Deco</option><option value="iznik">İznik Çinisi</option><option value="sakura">Sakura</option><option value="galaxy">Galaksi</option><option value="marbleLux">Lüks Mermer</option><option value="synthwave">Synthwave</option><option value="noel">Kış Masalı</option><option value="chrome">Krom</option><option value="sahara">Sahra</option></select><label class="lobbyLabel" for="lobbyChecker">Pul çeşidi</label><select id="lobbyChecker" class="settingSelect"><option value="classic">Klasik</option><option value="flat">Düz</option><option value="metal">Metalik</option><option value="marble">Mermer desenli</option><option value="wood">Ahşap desenli</option><option value="ring">Halkalı</option><option value="carbon">Karbon</option><option value="pearl">Sedef</option><option value="geometric">Geometrik</option><option value="gem">Mücevher</option><option value="coin">Madeni</option><option value="star">Yıldız</option><option value="candy">Şeker</option><option value="holo">Holografik</option></select><label class="lobbyLabel" for="lobbyDice">Zar çeşidi</label><select id="lobbyDice" class="settingSelect"><option value="classic">Klasik</option><option value="round">Yuvarlatılmış</option><option value="gloss">Parlak</option><option value="ruby">Yakut</option><option value="emerald">Zümrüt</option><option value="sapphire">Safir</option><option value="gold">Altın</option><option value="obsidian">Obsidyen</option><option value="crystal">Kristal</option><option value="wood">Ahşap</option><option value="neon">Neon</option><option value="fire">Ateş</option><option value="ice">Buz</option><option value="royal">Kraliyet</option></select><label class="lobbyLabel" for="lobbyAnimSpeed">Zar animasyonu hızı</label><select id="lobbyAnimSpeed" class="settingSelect"><option value="0.7">Hızlı</option><option value="1">Normal</option><option value="1.4">Yavaş</option></select><label class="settingToggle"><input type="checkbox" id="lobbyHelp"> Pul yardımı (üçgen ışıklandırma)</label><label class="settingToggle"><input type="checkbox" id="lobbyTapOff"> Dokunarak pul toplama</label><label class="settingToggle"><input type="checkbox" id="lobbyAnimations"> Animasyonlar (zar ve pul hareketleri)</label><p class="lobbyLabel">Sürükleyerek pul toplama her zaman açıktır.</p></div><p id="lobbyError" role="status" class="lobbyError"></p>
-</div></div><div id="gameSettingsModal" hidden><div class="gameSettingsCard"><h3>Ayarlar</h3><div id="gameSettingsMount"></div><button id="closeGameSettings" type="button">Oyuna Dön</button></div></div><main class="shell"><div id="startFullscreenPrompt" class="startFullscreenPrompt hide"><div class="startFullscreenCard"><strong>Tavla Kulübü</strong><span>Telefonunda geniş oyun alanına geç</span><button id="startFullscreenNow" type="button">⛶ Tam Ekranda Oyna</button><button id="startFullscreenSkip" type="button">Normal Görünüm</button></div></div><button id="leaveFullscreen" type="button" aria-label="Tam ekrandan çık" title="Tam ekrandan çık">⤢</button><div id="rotateHint" class="rotateHint" role="dialog" aria-label="Telefonu yan çevir"><div class="rotateCard"><div class="rotateIcon">📱↻</div><strong>Telefonu yan çevir</strong><span>Yatay görünümde oyun alanı daha geniş olur.</span><button id="rotateHintClose" type="button">Dik ekranda devam et</button></div></div><header class="top"><div><div class="brand">◈ Tavla <span class="tag">Kulübü</span></div></div><div style="display:flex;gap:12px;align-items:center"><button id="landscapeStart" class="soundToggle hide" type="button">↻ Yatay Oyna</button><button id="inGameSettings" class="soundToggle" type="button">⚙ Ayarlar</button><button id="fullScreen" class="soundToggle" type="button" title="Tam ekran aç / kapat">⛶ Tam ekran</button><button id="exitGame" class="soundToggle hide" type="button" title="Masadan ayrıl">✕ Çık</button><button class="soundToggle" id="soundToggle" type="button">🔊 Ses açık</button><span id="conn" class="small">Çevrimdışı oynanabilir</span><button id="addOpponent" class="soundToggle hide" type="button" title="Bu oyuncuyu arkadaşlarıma ekle">＋ Arkadaş Ekle</button></div></header><section class="layout"><div class="boardStage"><div class="turnBanner"><strong id="turnLabel">⚪ Beyazın sırası</strong><span id="turnStep" class="small">Zar bekleniyor</span><span class="pulse" aria-hidden="true"></span></div><div class="boardbox"><div id="joinBanner" class="joinBanner hide" role="dialog" aria-label="Arkadaşının masasına katıl"><strong>🎲 Arkadaşla Oyna</strong><span>Yeni masa aç veya arkadaşının 6 rakamlı koduyla katıl</span><button id="quickHost" type="button">＋ Yeni Masa Aç</button><input id="joinCodeDialog" class="roomCodeInput" type="text" inputmode="text" maxlength="10" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="6 rakamlı masa kodu" aria-label="Masa kodu"><button id="joinQuick" type="button">Oyuna Katıl</button><p id="joinErrorText" role="status" aria-live="polite" class="joinErrorText"></p><button id="joinCancel" type="button" class="ghost">Geri</button></div><canvas id="board" width="1000" height="720" tabindex="0" role="img" aria-label="Tavla tahtası: pulları seçerek oyna"></canvas><div id="gameOverlay" class="gameOverlay" aria-live="polite"><div class="gameCard"><div id="gameOverBadge" class="gameBadge">El bitti</div><h2 id="gameOverTitle">Kazanan</h2><p id="gameOverText">Yeni el için devam edebilirsin.</p><div class="gameScoreline"><span>⚪ <span id="overlayWhiteName">Oyuncu</span><strong id="overlayWhiteScore">0</strong></span><span>⚫ <span id="overlayBlackName">Bilgisayar</span><strong id="overlayBlackScore">0</strong></span></div><button id="playAgain" class="overlayBtn" type="button">Yeni el başlat</button></div></div></div><div class="actionDock" role="group" aria-label="Oyun kontrolleri"><button id="roll" class="dockBtn primary" type="button"><span class="ico">🎲</span><span class="dockBtnLabel">Zar At</span></button><button id="undo" class="dockBtn ghost" type="button"><span class="ico">↶</span><span class="dockBtnLabel">Geri Al</span></button><button id="end" class="dockBtn success" type="button"><span class="ico">✓</span><span class="dockBtnLabel">Hamleyi Bitir</span></button><button id="new" class="dockBtn ghost" type="button"><span class="ico">＋</span><span class="dockBtnLabel">Yeni Oyun</span></button></div></div><aside><nav class="menu"><button id="botMode" class="active">🤖 Bilgisayara karşı</button><button id="onlineMode" class="ghost">🌐 Arkadaşımla online</button></nav><div class="panel"><h3 class="title">Maç Durumu</h3><div class="scores"><div class="score">⚪ <span id="whitePlayerName">Beyaz</span><strong id="whiteScore">0</strong></div><div class="score">⚫ <span id="blackPlayerName">Siyah</span><strong id="blackScore">0</strong></div></div><p class="status" id="status" aria-live="polite"></p><p id="remaining" class="small"></p><div class="diceStage"><div><div class="diceCaption">🎲 ZARLAR</div><div class="dice"><span class="die" id="die1">–</span><span class="die" id="die2">–</span></div></div></div></div><section id="sideFriends" class="sideFriends panel"><div class="sideFriendsHead"><strong>Arkadaşlarım</strong><button type="button" id="sideFriendsOpen">Tümü ›</button></div><div class="sideFriendsCols"><span>Oyuncu</span><span>Durum</span></div><div id="sideFriendsRows" class="sideFriendsRows">Arkadaşlar yükleniyor…</div><div class="sideFriendsFoot" id="sideFriendsCount">—</div></section><div class="panel" id="legacyAppearance" hidden><h3 class="title">Görünüm</h3><label for="controlPlace">Kontroller</label><select id="controlPlace"><option value="dice">Zarın altında</option><option value="below">Tablanın altında</option></select><label for="boardTheme">Tabla tonu</label><select id="boardTheme"><option value="soft">Soft · Kum ve adaçayı</option><option value="classic">Klasik ahşap</option><option value="dark">Gece</option><option value="ivory">Fildişi &amp; Ceviz</option><option value="ocean">Okyanus Mavisi</option><option value="forest">Orman Yeşili</option><option value="slate">Kül Grisi</option></select><h3 class="title">Maç</h3><label for="goal">Maç hedefi</label><select id="goal"><option value="1">1 sayı</option><option value="3" selected>3 sayı</option><option value="5">5 sayı</option><option value="7">7 sayı</option></select></div><div class="panel" id="onlineBox"><h3 class="title">Arkadaşla Oyna</h3><label for="roomCodeDisplay">Masa kodun</label><div class="roomCodeRow"><input id="roomCodeDisplay" readonly placeholder="Masa açınca oluşur" aria-label="Masa kodu"><button id="copyCode" class="ghost" type="button" disabled>⧉ Kod</button></div><label for="invite">İsteğe bağlı davet bağlantısı</label><input id="invite" readonly placeholder="Masa açınca oluşur"><div class="actions"><button id="host">Masa aç</button><button id="copy" class="ghost">Bağlantıyı kopyala</button><button id="join" class="ghost wide hide">Davet edilen masaya katıl</button></div><div class="roomJoinRow"><input id="joinCodeInput" class="roomCodeInput" type="text" inputmode="text" maxlength="10" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Arkadaşının masa kodu" aria-label="Arkadaşının masa kodu"><button id="joinByCode" type="button" class="ghost">Oyuna Katıl</button></div><div class="inviteActions"><button id="share" class="ghost" type="button" disabled>↗ Davet Gönder</button><button id="copyInvite" class="ghost" type="button" disabled>⧉ Kopyala</button></div><p class="small" id="peerStatus">İki cihazın da interneti açık olmalıdır.</p></div></aside></section></main><script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script><script>
+</div></div><div id="gameSettingsModal" hidden><div class="gameSettingsCard"><h3>Ayarlar</h3><div id="gameSettingsMount"></div><button id="closeGameSettings" type="button">Oyuna Dön</button></div></div><main class="shell"><div id="startFullscreenPrompt" class="startFullscreenPrompt hide"><div class="startFullscreenCard"><strong>Tavla Kulübü</strong><span>Telefonunda geniş oyun alanına geç</span><button id="startFullscreenNow" type="button">⛶ Tam Ekranda Oyna</button><button id="startFullscreenSkip" type="button">Normal Görünüm</button></div></div><button id="leaveFullscreen" type="button" aria-label="Tam ekrandan çık" title="Tam ekrandan çık">⤢</button><div id="rotateHint" class="rotateHint" role="dialog" aria-label="Telefonu yan çevir"><div class="rotateCard"><div class="rotateIcon">📱↻</div><strong>Telefonu yan çevir</strong><span>Yatay görünümde oyun alanı daha geniş olur.</span><button id="rotateHintClose" type="button">Dik ekranda devam et</button></div></div><div id="fullscreenHelp" hidden role="status"><span id="fullscreenHelpText"></span><div class="fullscreenHelpActions"><button id="fullscreenHelpCopy" type="button">Tanılama bilgilerini kopyala</button><button id="fullscreenHelpClose" type="button">Kapat</button></div></div><header class="top"><div><div class="brand">◈ Tavla <span class="tag">Kulübü</span></div></div><div style="display:flex;gap:12px;align-items:center"><button id="landscapeStart" class="soundToggle hide" type="button">↻ Yatay Oyna</button><button id="inGameSettings" class="soundToggle" type="button">⚙ Ayarlar</button><button id="fullScreen" class="soundToggle" type="button" title="Tam ekran aç / kapat">⛶ Tam ekran</button><button id="exitGame" class="soundToggle hide" type="button" title="Masadan ayrıl">✕ Çık</button><button class="soundToggle" id="soundToggle" type="button">🔊 Ses açık</button><span id="conn" class="small">Çevrimdışı oynanabilir</span><button id="addOpponent" class="soundToggle hide" type="button" title="Bu oyuncuyu arkadaşlarıma ekle">＋ Arkadaş Ekle</button></div></header><section class="layout"><div class="boardStage"><div class="turnBanner"><strong id="turnLabel">⚪ Beyazın sırası</strong><span id="turnStep" class="small">Zar bekleniyor</span><span class="pulse" aria-hidden="true"></span></div><div class="boardbox"><div id="joinBanner" class="joinBanner hide" role="dialog" aria-label="Arkadaşının masasına katıl"><strong>🎲 Arkadaşla Oyna</strong><span>Yeni masa aç veya arkadaşının 6 rakamlı koduyla katıl</span><button id="quickHost" type="button">＋ Yeni Masa Aç</button><input id="joinCodeDialog" class="roomCodeInput" type="text" inputmode="text" maxlength="10" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="6 rakamlı masa kodu" aria-label="Masa kodu"><button id="joinQuick" type="button">Oyuna Katıl</button><p id="joinErrorText" role="status" aria-live="polite" class="joinErrorText"></p><button id="joinCancel" type="button" class="ghost">Geri</button></div><canvas id="board" width="1000" height="720" tabindex="0" role="img" aria-label="Tavla tahtası: pulları seçerek oyna"></canvas><div id="gameOverlay" class="gameOverlay" aria-live="polite"><div class="gameCard"><div id="gameOverBadge" class="gameBadge">El bitti</div><h2 id="gameOverTitle">Kazanan</h2><p id="gameOverText">Yeni el için devam edebilirsin.</p><div class="gameScoreline"><span>⚪ <span id="overlayWhiteName">Oyuncu</span><strong id="overlayWhiteScore">0</strong></span><span>⚫ <span id="overlayBlackName">Bilgisayar</span><strong id="overlayBlackScore">0</strong></span></div><button id="playAgain" class="overlayBtn" type="button">Yeni el başlat</button></div></div></div><div class="actionDock" role="group" aria-label="Oyun kontrolleri"><button id="roll" class="dockBtn primary" type="button"><span class="ico">🎲</span><span class="dockBtnLabel">Zar At</span></button><button id="undo" class="dockBtn ghost" type="button"><span class="ico">↶</span><span class="dockBtnLabel">Geri Al</span></button><button id="end" class="dockBtn success" type="button"><span class="ico">✓</span><span class="dockBtnLabel">Hamleyi Bitir</span></button><button id="new" class="dockBtn ghost" type="button"><span class="ico">＋</span><span class="dockBtnLabel">Yeni Oyun</span></button></div></div><aside><nav class="menu"><button id="botMode" class="active">🤖 Bilgisayara karşı</button><button id="onlineMode" class="ghost">🌐 Arkadaşımla online</button></nav><div class="panel"><h3 class="title">Maç Durumu</h3><div class="scores"><div class="score">⚪ <span id="whitePlayerName">Beyaz</span><strong id="whiteScore">0</strong></div><div class="score">⚫ <span id="blackPlayerName">Siyah</span><strong id="blackScore">0</strong></div></div><p class="status" id="status" aria-live="polite"></p><p id="remaining" class="small"></p><div class="diceStage"><div><div class="diceCaption">🎲 ZARLAR</div><div class="dice"><span class="die" id="die1">–</span><span class="die" id="die2">–</span></div></div></div></div><section id="sideFriends" class="sideFriends panel"><div class="sideFriendsHead"><strong>Arkadaşlarım</strong><button type="button" id="sideFriendsOpen">Tümü ›</button></div><div class="sideFriendsCols"><span>Oyuncu</span><span>Durum</span></div><div id="sideFriendsRows" class="sideFriendsRows">Arkadaşlar yükleniyor…</div><div class="sideFriendsFoot" id="sideFriendsCount">—</div></section><div class="panel" id="legacyAppearance" hidden><h3 class="title">Görünüm</h3><label for="controlPlace">Kontroller</label><select id="controlPlace"><option value="dice">Zarın altında</option><option value="below">Tablanın altında</option></select><label for="boardTheme">Tabla tonu</label><select id="boardTheme"><option value="soft">Soft · Kum ve adaçayı</option><option value="classic">Klasik ahşap</option><option value="dark">Gece</option><option value="ivory">Fildişi &amp; Ceviz</option><option value="ocean">Okyanus Mavisi</option><option value="forest">Orman Yeşili</option><option value="slate">Kül Grisi</option></select><h3 class="title">Maç</h3><label for="goal">Maç hedefi</label><select id="goal"><option value="1">1 sayı</option><option value="3" selected>3 sayı</option><option value="5">5 sayı</option><option value="7">7 sayı</option></select></div><div class="panel" id="onlineBox"><h3 class="title">Arkadaşla Oyna</h3><label for="roomCodeDisplay">Masa kodun</label><div class="roomCodeRow"><input id="roomCodeDisplay" readonly placeholder="Masa açınca oluşur" aria-label="Masa kodu"><button id="copyCode" class="ghost" type="button" disabled>⧉ Kod</button></div><label for="invite">İsteğe bağlı davet bağlantısı</label><input id="invite" readonly placeholder="Masa açınca oluşur"><div class="actions"><button id="host">Masa aç</button><button id="copy" class="ghost">Bağlantıyı kopyala</button><button id="join" class="ghost wide hide">Davet edilen masaya katıl</button></div><div class="roomJoinRow"><input id="joinCodeInput" class="roomCodeInput" type="text" inputmode="text" maxlength="10" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Arkadaşının masa kodu" aria-label="Arkadaşının masa kodu"><button id="joinByCode" type="button" class="ghost">Oyuna Katıl</button></div><div class="inviteActions"><button id="share" class="ghost" type="button" disabled>↗ Davet Gönder</button><button id="copyInvite" class="ghost" type="button" disabled>⧉ Kopyala</button></div><p class="small" id="peerStatus">İki cihazın da interneti açık olmalıdır.</p></div></aside></section></main><script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script><script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id), cv=$('board'),ctx=cv.getContext('2d');let mode='bot',game,selected=null,targets=[],history=[],moveLogs=[],lastMove=null,diceAnimating=false,rollToken=0,peer=null,connection=null,peerRole=null,onlineReady=false,botBusy=false;const ROOM='tavlakulubu-';let guestCanUndo=false;let joinTimeout=null;let signalRetry=null,signalAttempts=0;const pref={place:localStorage.getItem('tk_place')||'dice',theme:localStorage.getItem('tk_theme')||'soft',checker:localStorage.getItem('tk_checker')||'classic',dice:localStorage.getItem('tk_dice')||'classic',help:localStorage.getItem('tk_help')!=='off',tapOff:localStorage.getItem('tk_tap_off')!=='off',animSpeed:Number(localStorage.getItem('tk_anim_speed'))||1,animations:localStorage.getItem('tk_animations')!=='off'};const playerSide=()=>mode==='online'?(peerRole==='guest'?-1:1):(mode==='local'?(game?.turn||1):1);const viewFlip=()=>playerSide()===-1;function syncPrefs(){document.body.classList.remove('boardTheme-soft','boardTheme-classic','boardTheme-dark','boardTheme-ivory','boardTheme-ocean','boardTheme-forest','boardTheme-slate','boardTheme-emerald','boardTheme-ruby','boardTheme-sapphire','boardTheme-turquoise','boardTheme-royal','boardTheme-walnut','boardTheme-neon','boardTheme-deco','boardTheme-iznik','boardTheme-sakura','boardTheme-galaxy','boardTheme-marbleLux','boardTheme-synthwave','boardTheme-noel','boardTheme-chrome','boardTheme-sahara');document.body.classList.add('boardTheme-'+pref.theme);$('controlPlace').value=pref.place;$('boardTheme').value=pref.theme;document.querySelector('.actionDock').classList.toggle('below',pref.place==='below');draw();}const fairDie=()=>{const data=new Uint32Array(1);const bound=4294967292;do{crypto.getRandomValues(data);}while(data[0]>=bound);return data[0]%6+1;};const initial=()=>{let p=Array(24).fill(0);p[23]=2;p[12]=5;p[7]=3;p[5]=5;p[0]=-2;p[11]=-5;p[16]=-3;p[18]=-5;return {p,bar:[0,0],off:[0,0],turn:1,dice:[],rolled:false,lastRoll:null,scores:[0,0],winner:0,goal:Number($('goal').value),message:'Oyun başladı. Zar atın.'}};
 const clone=g=>({ ...g,p:[...g.p],bar:[...g.bar],off:[...g.off],dice:[...g.dice],scores:[...g.scores],lastRoll:g.lastRoll?[...g.lastRoll]:null});const idx=c=>c===1?0:1;const own=(v,c)=>v*c>0;const blocked=(g,to,c)=>to>=0&&to<24&&g.p[to]*c<=-2;const home=(pos,c)=>c===1?pos<=5:pos>=18;const allHome=(g,c)=>g.bar[idx(c)]===0&&g.p.every((v,i)=>!own(v,c)||home(i,c));
@@ -351,40 +358,144 @@ $('soundToggle').textContent=soundOn?'🔊 Ses açık':'🔇 Ses kapalı';
 
 // Unified display manager. All layout changes happen through one module.
 // Preserve the preferred landscape layout: compact left sidebar and right board.
-const responsiveDock=document.querySelector('.actionDock');
-const responsiveDockParent=responsiveDock.parentNode,responsiveDockNext=responsiveDock.nextSibling;
-const responsiveAside=document.querySelector('.layout > aside');
-const responsiveLeave=$('leaveFullscreen');
-const responsiveLeaveParent=responsiveLeave.parentNode,responsiveLeaveNext=responsiveLeave.nextSibling;
-let landscapeDockMounted=false;
-function arrangeLandscapeControls(enabled){
- if(enabled===landscapeDockMounted)return;
- if(enabled){
-  responsiveAside.appendChild(responsiveDock);
-  responsiveAside.appendChild(responsiveLeave);
- }else{
-  responsiveDockParent.insertBefore(responsiveDock,responsiveDockNext);
-  responsiveLeaveParent.insertBefore(responsiveLeave,responsiveLeaveNext);
- }
- landscapeDockMounted=enabled;
+
+const compactDock=document.querySelector('.actionDock');
+const compactDockHome=compactDock.parentNode,compactDockNext=compactDock.nextSibling;
+const compactExit=$('leaveFullscreen'),compactExitHome=compactExit.parentNode,compactExitNext=compactExit.nextSibling;
+let compactMounted=false;
+function alignCompactControls(compact){
+  if(compact===compactMounted)return;
+  const sidebar=document.querySelector('.layout > aside');
+  if(compact){
+    sidebar.appendChild(compactDock);
+    sidebar.insertBefore(compactExit,compactDock);
+  }else{
+    compactDockHome.insertBefore(compactDock,compactDockNext);
+    compactExitHome.insertBefore(compactExit,compactExitNext);
+  }
+  compactMounted=compact;
 }
-const compactDock=document.querySelector('.actionDock'),compactDockHome=compactDock.parentNode,compactDockNext=compactDock.nextSibling,compactExit=$('leaveFullscreen'),compactExitHome=compactExit.parentNode,compactExitNext=compactExit.nextSibling;
-function alignCompactControls(){const compact=document.body.classList.contains('is-mobile')&&document.body.classList.contains('is-landscape');const sidebar=document.querySelector('aside');if(compact){if(compactDock.parentNode!==sidebar)sidebar.appendChild(compactDock);if(compactExit.parentNode!==sidebar)sidebar.insertBefore(compactExit,compactDock);}else{if(compactDock.parentNode!==compactDockHome)compactDockHome.insertBefore(compactDock,compactDockNext);if(compactExit.parentNode!==compactExitHome)compactExitHome.insertBefore(compactExit,compactExitNext);}}
-const Display=(()=>{const doc=document,root=doc.documentElement,isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),touch='ontouchstart'in window||navigator.maxTouchPoints>0;
-const isMobileLike=()=>touch&&Math.min(screen.width,screen.height)<900,fs=()=>doc.fullscreenElement||doc.webkitFullscreenElement||null;let raf=0,wantsRotation=false,skipHint=false;const callbacks=new Set();
-function applyLayout(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;const vp=visualViewport,w=Math.round(vp?.width||innerWidth),h=Math.round(vp?.height||innerHeight),landscape=w>h,mobile=isMobileLike();root.style.setProperty('--app-w',w+'px');root.style.setProperty('--app-h',h+'px');arrangeLandscapeControls(mobile&&landscape);for(const [k,v]of [['is-mobile',mobile],['is-ios',isIOS],['is-touch',touch],['is-landscape',landscape],['is-portrait',!landscape],['is-fullscreen',!!fs()]])doc.body.classList.toggle(k,v);alignCompactControls();$('landscapeStart').classList.toggle('hide',!mobile||landscape);$('leaveFullscreen').hidden=!fs();const lobby=doc.getElementById('simpleLobby');$('rotateHint').classList.toggle('show',wantsRotation&&mobile&&!landscape&&!skipHint&&!!lobby?.hidden);});}
-async function enterFS(){const target=doc.documentElement,fn=target.requestFullscreen||target.webkitRequestFullscreen;if(!fn)return false;try{await fn.call(target);return!!fs()}catch(_){return false}}
-async function exitFS(){try{if(doc.exitFullscreen)await doc.exitFullscreen();else if(doc.webkitExitFullscreen)await doc.webkitExitFullscreen();return true}catch(_){return false}}
-async function enterPlayMode({preferLandscape=true}={}){wantsRotation=preferLandscape;skipHint=false;const full=await enterFS();let locked=false;if(full&&preferLandscape&&isMobileLike()&&!isIOS){try{await screen.orientation?.lock?.('landscape');locked=true}catch(_){}}applyLayout();return{fullscreen:full,locked,landscape:innerWidth>innerHeight}}
-async function exitPlayMode(){wantsRotation=false;skipHint=true;try{screen.orientation?.unlock?.()}catch(_){}await exitFS();applyLayout()}
-for(const ev of ['fullscreenchange','webkitfullscreenchange'])doc.addEventListener(ev,()=>{applyLayout();for(const cb of callbacks)cb(!!fs())});
-addEventListener('resize',applyLayout,{passive:true});addEventListener('orientationchange',applyLayout,{passive:true});visualViewport?.addEventListener('resize',applyLayout,{passive:true});visualViewport?.addEventListener('scroll',applyLayout,{passive:true});
-return{isFullscreen:()=>!!fs(),isMobileLike,enterPlayMode,exitPlayMode,applyLayout,onFullscreenChange:fn=>callbacks.add(fn),dismissHint:()=>{skipHint=true;applyLayout()}}})();
-$('fullScreen').onclick=async()=>{if(Display.isFullscreen())await Display.exitPlayMode();else await Display.enterPlayMode({preferLandscape:Display.isMobileLike()});};
+const Display=(()=>{
+  const doc=document,root=doc.documentElement;
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const touch=('ontouchstart'in window)||navigator.maxTouchPoints>0;
+  const mobile=()=>touch&&Math.min(screen.width,screen.height)<900;
+  const fs=()=>doc.fullscreenElement||doc.webkitFullscreenElement||null;
+  const standalone=()=>!!(navigator.standalone||window.matchMedia?.('(display-mode: standalone)').matches);
+  const fsSupported=()=>!!(root.requestFullscreen||root.webkitRequestFullscreen);
+  let softMode=false,wantsRotation=false,skipHint=false,raf=0,lastWasNative=false,reason='not_attempted';
+  let noticeTimeout=0;
+  const listeners=new Set();
+  function showNotice(message){
+    const box=$('fullscreenHelp');
+    $('fullscreenHelpText').textContent=message;
+    box.hidden=false;
+    clearTimeout(noticeTimeout);
+    noticeTimeout=setTimeout(()=>{box.hidden=true;},16000);
+  }
+  function diagnosis(){
+    const v=window.visualViewport;
+    return {
+      browser:navigator.userAgent,ios:isIOS,standalone:standalone(),
+      fullscreenAPI:fsSupported(),fullscreenActive:!!fs(),wideMode:softMode,
+      lastFullscreenResult:reason,
+      viewport:[Math.round(v?.width||innerWidth),Math.round(v?.height||innerHeight)],
+      innerWindow:[innerWidth,innerHeight],orientation:screen.orientation?.type||'unknown'
+    };
+  }
+  function applyLayout(){
+    if(raf)return;
+    raf=requestAnimationFrame(()=>{
+      raf=0;
+      const v=window.visualViewport,w=Math.round(v?.width||innerWidth),h=Math.round(v?.height||innerHeight);
+      const landscape=w>h,isMobile=mobile(),native=!!fs();
+      root.style.setProperty('--app-w',w+'px');
+      root.style.setProperty('--app-h',h+'px');
+      for(const [name,on] of [
+        ['is-mobile',isMobile],['is-ios',isIOS],['is-touch',touch],
+        ['is-landscape',landscape],['is-portrait',!landscape],
+        ['is-fullscreen',native],['is-immersive',native||softMode],['is-standalone',standalone()]
+      ])doc.body.classList.toggle(name,on);
+      alignCompactControls(isMobile&&landscape);
+      $('landscapeStart').classList.toggle('hide',!isMobile||landscape);
+      const exit=$('leaveFullscreen');
+      exit.hidden=!(native||softMode||(isMobile&&landscape));
+      exit.textContent=native||softMode?'⤢':'⛶';
+      exit.title=native?'Tam ekrandan çık':softMode?'Geniş görünümden çık':'Tam ekranı dene';
+      $('fullScreen').textContent=native?'⤢ Küçült':softMode?'⤢ Normal görünüm':'⛶ Tam ekran';
+      $('rotateHint').classList.toggle('show',wantsRotation&&isMobile&&!landscape&&!skipHint&&!!$('simpleLobby')?.hidden);
+    });
+  }
+  async function enterFS(){
+    if(fs())return true;
+    const fn=root.requestFullscreen||root.webkitRequestFullscreen;
+    if(!fn){reason='API desteklenmiyor';return false;}
+    try{
+      // Fullscreen isteği doğrudan kullanıcı tıklamasında, başka await olmadan başlar.
+      await fn.call(root);
+      const ok=!!fs();
+      reason=ok?'başarılı':'tarayıcı tam ekrana geçmedi';
+      return ok;
+    }catch(error){
+      reason=error?.name||'tarayıcı isteği reddetti';
+      return false;
+    }
+  }
+  async function enterPlayMode({preferLandscape=true}={}){
+    wantsRotation=preferLandscape;skipHint=false;
+    const full=await enterFS();
+    softMode=!full;
+    let locked=false;
+    // iOS Safari Screen Orientation Lock API'sini desteklemez.
+    if(full&&preferLandscape&&mobile()&&!isIOS){
+      try{if(screen.orientation?.lock){await screen.orientation.lock('landscape');locked=true;}}catch(_){}
+    }
+    if(!full&&!standalone()){
+      showNotice(isIOS
+        ?'iPhone Safari bu oyun sayfasını gerçek tam ekrana alamıyor. Oyun kullanılabilir alana sığdırıldı. Tarayıcı çubukları olmadan açmak için Safari: Paylaş → Ana Ekrana Ekle → Web Uygulaması Olarak Aç.'
+        :'Tarayıcı gerçek tam ekrana izin vermedi. Geniş oyun görünümü kullanılıyor.');
+    }
+    applyLayout();
+    return{fullscreen:full,wideMode:softMode,locked,landscape:innerWidth>innerHeight,reason};
+  }
+  async function exitPlayMode(){
+    softMode=false;wantsRotation=false;skipHint=true;
+    $('fullscreenHelp').hidden=true;
+    try{screen.orientation?.unlock?.();}catch(_){}
+    if(fs()){
+      try{const exit=doc.exitFullscreen||doc.webkitExitFullscreen;if(exit)await exit.call(doc);}catch(_){}
+    }
+    applyLayout();
+  }
+  const onFSChange=()=>{
+    const now=!!fs();
+    if(lastWasNative&&!now){softMode=false;wantsRotation=false;}
+    lastWasNative=now;
+    applyLayout();
+    for(const cb of listeners)cb(now);
+  };
+  for(const name of ['fullscreenchange','webkitfullscreenchange'])doc.addEventListener(name,onFSChange);
+  window.addEventListener('resize',applyLayout,{passive:true});
+  window.addEventListener('orientationchange',applyLayout,{passive:true});
+  window.addEventListener('pageshow',applyLayout,{passive:true});
+  window.visualViewport?.addEventListener('resize',applyLayout,{passive:true});
+  window.visualViewport?.addEventListener('scroll',applyLayout,{passive:true});
+  return {
+    isFullscreen:()=>!!fs()||softMode,isNativeFullscreen:()=>!!fs(),
+    isMobileLike:mobile,enterPlayMode,exitPlayMode,applyLayout,diagnosis,
+    onFullscreenChange:cb=>listeners.add(cb),
+    dismissHint:()=>{skipHint=true;applyLayout();}
+  };
+})();
+$('fullScreen').onclick=()=>Display.isFullscreen()?Display.exitPlayMode():Display.enterPlayMode({preferLandscape:Display.isMobileLike()});
 $('landscapeStart').onclick=()=>Display.enterPlayMode({preferLandscape:true});
-$('leaveFullscreen').onclick=()=>Display.exitPlayMode();
+$('leaveFullscreen').onclick=()=>Display.isFullscreen()?Display.exitPlayMode():Display.enterPlayMode({preferLandscape:true});
 $('rotateHintClose').onclick=()=>Display.dismissHint();
-Display.onFullscreenChange(active=>{$('fullScreen').textContent=active?'⤢ Küçült':'⛶ Tam ekran';});
+$('fullscreenHelpClose').onclick=()=>{$('fullscreenHelp').hidden=true;};
+$('fullscreenHelpCopy').onclick=async()=>{try{
+  await navigator.clipboard.writeText(JSON.stringify(Display.diagnosis(),null,2));
+  $('fullscreenHelpText').textContent='Tanılama bilgileri kopyalandı.';
+}catch(_){$('fullscreenHelpText').textContent='Kopyalama engellendi; Safari üzerinden deneyin.';}};
 Display.applyLayout();
 $('soundToggle').onclick=()=>{soundOn=!soundOn;localStorage.setItem('tavlaSound',soundOn?'on':'off');$('soundToggle').textContent=soundOn?'🔊 Ses açık':'🔇 Ses kapalı';};
 const AudioFX=(()=>{
