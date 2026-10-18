@@ -830,17 +830,17 @@ function cloudConnect(code,role,token,retries=0){
  const emit=(event,payload)=>{for(const fn of listeners[event]){try{fn(payload);}catch(e){console.error(e);}}};
  connection=virtual;peerRole=role;
  const fail=(message)=>{if(session!==cloudSession)return;clearInterval(readyPoll);showJoinError(message);clearTimeout(joinTimeout);$('joinQuick').disabled=false;$('joinQuick').textContent='Yeniden Dene';$('host').disabled=false;$('join').disabled=false;$('peerStatus').textContent=message;if(role==='guest'&&lobby.hidden)$('joinBanner').classList.remove('hide');};
- const connected=()=>{if(linked)return;linked=true;clearInterval(readyPoll);clearTimeout(joinTimeout);showJoinError('');emit('open');cloudMessage({type:'identity',name:localStorage.getItem('tk_player_name')|| (role==='host'?'Beyaz':'Siyah')});};
+ const connected=()=>{if(linked||session!==cloudSession||ws.readyState!==WebSocket.OPEN)return;linked=true;clearInterval(readyPoll);clearTimeout(joinTimeout);showJoinError('');$('lobbyError').textContent='';emit('open');cloudMessage({type:'identity',name:localStorage.getItem('tk_player_name')|| (role==='host'?'Beyaz':'Siyah')});};
  ws.onopen=()=>{$('peerStatus').textContent=role==='host'?'Masa açıldı, arkadaş bekleniyor…':'Masa bağlantısı doğrulanıyor…';showJoinError('');cloudMessage({type:'ready'});readyPoll=setInterval(()=>{if(session!==cloudSession||linked||ws.readyState!==WebSocket.OPEN){clearInterval(readyPoll);return;}cloudMessage({type:'ready'});},1800);};
  ws.onmessage=(ev)=>{if(session!==cloudSession)return;let msg;try{msg=JSON.parse(ev.data);}catch(_){return;}
-  if(msg.type==='connected'){cloudMessage({type:'ready'});cloudMessage({type:'identity',name:localStorage.getItem('tk_player_name')||(role==='host'?'Beyaz':'Siyah')});return;}
+  if(msg.type==='connected'){if(role==='guest')connected();cloudMessage({type:'ready'});cloudMessage({type:'identity',name:localStorage.getItem('tk_player_name')||(role==='host'?'Beyaz':'Siyah')});return;}
   if(msg.type==='identity'){onlineNames[msg.role]=msg.name;render();updateOpponentAdd();return;}
   if(msg.type==='presence'){if(msg.ready)connected();cloudMessage({type:'identity',name:localStorage.getItem('tk_player_name')||(role==='host'?'Beyaz':'Siyah')});return;}
   if(msg.type==='ready'||msg.type==='joined'){connected();cloudMessage({type:'identity',name:localStorage.getItem('tk_player_name')||(role==='host'?'Beyaz':'Siyah')});if(role==='host')broadcast();return;}
   if(msg.type==='peer_left'){linked=false;onlineReady=false;setRemoteMovePending(false);$('peerStatus').textContent='Arkadaşın bağlantısı kesildi; yeniden katılmasını bekleyin.';render();return;}
-  if(msg.type==='state'||['move','roll','undo','end'].includes(msg.type))emit('data',msg);
+  if(msg.type==='state'||['move','roll','undo','end'].includes(msg.type)){if(msg.type==='state'&&role==='guest'&&msg.game&&Array.isArray(msg.game.p)&&msg.game.p.length===24)connected();emit('data',msg);}
  };
- ws.onerror=()=>fail('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');
+ ws.onerror=()=>{if(!linked)fail('WebSocket bağlantısı kurulamadı. Masa kodunu ve internet bağlantısını kontrol edin.');};
  ws.onclose=e=>{clearInterval(readyPoll);if(session!==cloudSession)return;emit('close');if(!linked)fail(e.code===1006?'Masa bulunamadı veya bağlantı reddedildi. Yeni davet isteyin.':'Bağlantı kapandı ('+e.code+').');else{$('peerStatus').textContent='Bağlantı kesildi. Yeniden bağlanılıyor…';if(retries<5)retryHandle=setTimeout(()=>{if(session===cloudSession&&mode==='online')cloudConnect(code,role,token,retries+1);},1500*(retries+1));}};
  setupConn(virtual,role);
  joinTimeout=setTimeout(()=>{if(session===cloudSession&&!linked&&role==='guest'){fail('Bağlantı zaman aşımına uğradı. Masa sahibinin oyunu açık tuttuğundan emin olun.');try{ws.close();}catch(_){}}},14000);
