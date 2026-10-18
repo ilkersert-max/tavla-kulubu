@@ -14,22 +14,22 @@ function legal(s){if(!s.rolled||s.winner||!s.dice.length)return[];const opts=[..
 let best=0,accepted=[];for(const m of opts){const len=1+longest(apply(s,m));if(len>best){best=len;accepted=[m]}else if(len===best)accepted.push(m)}
 if(best===1&&s.dice.length===2&&s.dice[0]!==s.dice[1]){const higher=Math.max(...s.dice);if(accepted.some(m=>m.die===higher))accepted=accepted.filter(m=>m.die===higher)}return accepted}
 const turnOver=s=>({...s,turn:other(s.turn),rolled:false,dice:[],lastRoll:[],version:s.version+1});
-function chooseBotMove(state){const opts=legal(state);if(!opts.length)return null;let best=opts[0],value=-Infinity;for(const m of opts){const after=apply(state,m);const capture=m.to!=='off'&&state.points[m.to]===BLACK;let score=(m.from==='bar'?1000:0)+(capture?130:0)+(m.to==='off'?80:0);if(m.to!=='off'){if(after.points[m.to]>=2)score+=38;else if(after.points[m.to]===1)score-=20;}score+=Math.random()*2;if(score>value){value=score;best=m}}return best}
+function chooseBotMove(state){const opts=legal(state);if(!opts.length)return null;let best=opts[0],value=-Infinity;for(const m of opts){const after=apply(state,m);const capture=m.to!=='off'&&state.points[m.to]===WHITE;let score=(m.from==='bar'?1000:0)+(capture?130:0)+(m.to==='off'?80:0);if(m.to!=='off'){if(after.points[m.to]<=-2)score+=38;else if(after.points[m.to]===-1)score-=20;}score+=Math.random()*2;if(score>value){value=score;best=m}}return best}
 const token=()=>Array.from(crypto.getRandomValues(new Uint8Array(24)),n=>n.toString(16).padStart(2,'0')).join('');
 export class TavlaRoom{
  constructor(ctx,env){this.ctx=ctx;this.env=env;this.ready=ctx.blockConcurrencyWhile(async()=>{this.game=await ctx.storage.get('game')||firstState();this.seats=await ctx.storage.get('seats')||{'-1':null,'1':null};this.connections=new Map();this.botMode=await ctx.storage.get('botMode')||false})}
- async fetch(request){await this.ready;if(request.headers.get('Upgrade')?.toLowerCase()!=='websocket')return new Response('Upgrade required',{status:426});const url=new URL(request.url),provided=url.searchParams.get('token');if(url.searchParams.get('bot')==='1'&&!this.seats[BLACK]&&!this.seats[WHITE]){this.botMode=true;this.seats[WHITE]='BOT';this.game=firstState();await this.ctx.storage.put('botMode',true);await this.ctx.storage.put('game',this.game)}let side=null,issued=null;
+ async fetch(request){await this.ready;if(request.headers.get('Upgrade')?.toLowerCase()!=='websocket')return new Response('Upgrade required',{status:426});const url=new URL(request.url),provided=url.searchParams.get('token');if(url.searchParams.get('bot')==='1'&&!this.seats[BLACK]&&!this.seats[WHITE]){this.botMode=true;this.seats[BLACK]='BOT';this.game=firstState();await this.ctx.storage.put('botMode',true);await this.ctx.storage.put('game',this.game)}let side=null,issued=null;
  for(const s of [BLACK,WHITE])if(this.seats[s]&&this.seats[s]===provided){side=s;issued=provided;break}
- if(side===null)for(const s of (this.botMode?[BLACK]:[BLACK,WHITE]))if(!this.seats[s]){side=s;issued=token();this.seats[s]=issued;break}
+ if(side===null)for(const s of (this.botMode?[WHITE]:[BLACK,WHITE]))if(!this.seats[s]){side=s;issued=token();this.seats[s]=issued;break}
  if(side===null)return new Response('Oda dolu',{status:403});
  const [client,server]=Object.values(new WebSocketPair());server.accept();
  for(const [socket,seat] of this.connections)if(seat===side){try{socket.close(4001,'Yeni bağlantı')}catch{}this.connections.delete(socket)}
- this.connections.set(server,side);await this.ctx.storage.put('seats',this.seats);this.send(server,{type:'welcome',side,token:issued});this.broadcast();
+ this.connections.set(server,side);await this.ctx.storage.put('seats',this.seats);this.send(server,{type:'welcome',side,token:issued});this.broadcast();if(this.botMode&&this.game.turn===BLACK&&!this.game.winner){this.pending=(this.pending||Promise.resolve()).then(()=>this.playBotTurn()).catch(()=>{})}
  server.addEventListener('message',event=>{this.pending=(this.pending||Promise.resolve()).then(()=>this.receive(server,event.data)).catch(()=>this.send(server,{type:'error',message:'İşlem tamamlanamadı'}))});
  server.addEventListener('close',()=>{this.connections.delete(server);this.broadcast()});server.addEventListener('error',()=>{this.connections.delete(server);this.broadcast()});
  return new Response(null,{status:101,webSocket:client})}
  send(ws,data){try{if(ws.readyState===1)ws.send(JSON.stringify(data))}catch{}}
- broadcast(extra={}){const players=[...this.connections.values()],payload={type:'state',gameState:this.game,moves:legal(this.game),connected:{black:players.includes(BLACK),white:this.botMode||players.includes(WHITE)},bot:this.botMode,...extra};for(const ws of this.connections.keys())this.send(ws,payload)}
+ broadcast(extra={}){const players=[...this.connections.values()],payload={type:'state',gameState:this.game,moves:legal(this.game),connected:{black:this.botMode||players.includes(BLACK),white:players.includes(WHITE)},bot:this.botMode,...extra};for(const ws of this.connections.keys())this.send(ws,payload)}
  async receive(ws,raw){if(!this.connections.has(ws))return;let message;try{message=JSON.parse(raw)}catch{return this.send(ws,{type:'error',message:'Geçersiz mesaj'})}
  if(!message||!['roll','move'].includes(message.type))return;const side=this.connections.get(ws);
  if(this.game.winner)return this.send(ws,{type:'error',message:'Oyun bitti'});
@@ -38,7 +38,7 @@ export class TavlaRoom{
  let s=this.game,notice='';
  if(message.type==='roll'){if(s.rolled)return this.send(ws,{type:'error',message:'Zar zaten atıldı'});if(fullDoor(s,side)){s=turnOver(s);notice='Kapı kapalı — zar atmadan sıra geçti'}else{const a=die(),b=die();s=copy(s);s.dice=a===b?[a,a,a,a]:[a,b];s.lastRoll=[a,b];s.rolled=true;s.version++;if(legal(s).length===0){s=turnOver(s);notice='Oynanabilir hamle yok — sıra geçti'}}}
  else{if(!s.rolled)return this.send(ws,{type:'error',message:'Önce zar at'});const m=legal(s).find(x=>x.from===message.from&&x.to===message.to&&x.die===message.die);if(!m)return this.send(ws,{type:'error',message:'Geçersiz hamle'});s=apply(s,m);s.version++;if(!s.winner&&legal(s).length===0){s=turnOver(s);notice='Sıra rakibe geçti'}}
- this.game=s;await this.ctx.storage.put('game',s);this.broadcast({notice});if(this.botMode&&this.game.turn===WHITE&&!this.game.winner){await this.playBotTurn()}}
- async playBotTurn(){let s=this.game;if(s.turn!==WHITE||s.winner)return;let count=0;if(fullDoor(s,WHITE)){s=turnOver(s)}else{const a=die(),b=die();s=copy(s);s.dice=a===b?[a,a,a,a]:[a,b];s.lastRoll=[a,b];s.rolled=true;s.version++;while(!s.winner&&count++<4){const m=chooseBotMove(s);if(!m)break;s=apply(s,m);s.version++}if(!s.winner)s=turnOver(s)}this.game=s;await this.ctx.storage.put('game',s);this.broadcast({notice:s.winner?'Bilgisayar kazandı':'Bilgisayar hamlelerini tamamladı'})}
+ this.game=s;await this.ctx.storage.put('game',s);this.broadcast({notice});if(this.botMode&&this.game.turn===BLACK&&!this.game.winner){await this.playBotTurn()}}
+ async playBotTurn(){let s=this.game;if(s.turn!==BLACK||s.winner)return;if(fullDoor(s,BLACK)){s=turnOver(s)}else{const a=die(),b=die();s=copy(s);s.dice=a===b?[a,a,a,a]:[a,b];s.lastRoll=[a,b];s.rolled=true;s.version++;let count=0;while(!s.winner&&count++<4){const m=chooseBotMove(s);if(!m)break;s=apply(s,m);s.version++}if(!s.winner)s=turnOver(s)}this.game=s;await this.ctx.storage.put('game',s);this.broadcast({notice:s.winner?'Bilgisayar kazandı':'Bilgisayar hamlelerini tamamladı'})}
 
 }
