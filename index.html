@@ -776,7 +776,7 @@ $('host').onclick=async()=>{
  cloudDisconnect();disconnect();mode='online';$('onlineBox').classList.add('on');
  $('host').disabled=true;$('peerStatus').textContent='Cloudflare üzerinde masa hazırlanıyor…';
  try{
-  const response=await fetch(cloudBase+'/create',{method:'POST'});
+  const createController=new AbortController();const createTimeout=setTimeout(()=>createController.abort(),12000);let response;try{response=await fetch(cloudBase+'/create',{method:'POST',cache:'no-store',signal:createController.signal});}finally{clearTimeout(createTimeout);}
   if(!response.ok)throw Error('Sunucu hatası: '+response.status);
   const data=await response.json();
   const createdCode=String(data.room??'').trim().toLowerCase();
@@ -785,10 +785,10 @@ $('host').onclick=async()=>{
   }
   if(typeof data.hostSecret!=='string'||data.hostSecret.length!==48)throw Error('Sunucu geçerli oda yetkisi döndürmedi. Yeniden deneyin.');
   const url=new URL(location.href);url.searchParams.set('room',createdCode);url.searchParams.delete('v');
-  $('invite').value=url.href;$('roomCodeDisplay').value=createdCode;$('copyCode').disabled=false;$('share').disabled=false;$('copyInvite').disabled=false;
+  $('invite').value=url.href;$('roomCodeDisplay').value=createdCode;$('copyCode').disabled=false;$('share').disabled=false;$('copyInvite').disabled=false;if(!lobby.hidden&&lobbyPhase==='waiting'){$('lobbyRoom').textContent=createdCode;$('lobbyCopy').disabled=false;$('lobbyShare').disabled=false;$('lobbyWaitStatus').textContent='Masa kodu hazır · Arkadaşın bekleniyor…';}
   cloudToken=data.hostSecret;sessionStorage.setItem('tk_host_'+createdCode,data.hostSecret);
   start();cloudConnect(createdCode,'host',data.hostSecret);$('exitGame').classList.remove('hide');
- }catch(e){$('host').disabled=false;$('peerStatus').textContent='Masa oluşturulamadı: '+e.message;}
+ }catch(e){$('host').disabled=false;const message=e.name==='AbortError'?'Masa oluşturma 12 saniyeyi aştı. Sunucuya yeniden bağlanmayı deneyin.':'Masa oluşturulamadı: '+e.message;$('peerStatus').textContent=message;if(!lobby.hidden&&lobbyPhase==='waiting'){$('lobbyWaitStatus').textContent=message;$('lobbyRoom').textContent='Kod oluşturulamadı';}}
 };
 $('join').onclick=()=>{
  const code=normalizeRoomCode($('joinCodeDialog').value||$('joinCodeInput').value||new URL(location.href).searchParams.get('room'));
