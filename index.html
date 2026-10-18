@@ -413,56 +413,6 @@ body.is-mobile.is-landscape.controls-below .layout > aside > .actionDock.below{
   display:grid!important;
   grid-template-columns:repeat(2,minmax(0,1fr))!important;
 }
-
-/* v38 - conservative iPhone/Android landscape fit. Retain canvas 1000:720
-   geometry and the existing hit testing. No CSS stretch or cropping. */
-body.is-mobile.is-landscape .shell{
-  padding-top:max(2px,env(safe-area-inset-top))!important;
-  padding-bottom:max(2px,env(safe-area-inset-bottom))!important;
-  padding-left:max(2px,env(safe-area-inset-left))!important;
-  padding-right:max(2px,env(safe-area-inset-right))!important;
-}
-body.is-mobile.is-landscape .layout{
-  gap:3px!important;
-  min-height:0!important;
-  height:100%!important;
-}
-body.is-mobile.is-landscape.controls-dice .layout{
-  grid-template-columns:46px minmax(0,1fr)!important;
-}
-body.is-mobile.is-landscape.controls-dice .layout > aside{
-  padding:0!important;
-  align-items:center!important;
-}
-body.is-mobile.is-landscape.controls-dice .layout > aside > #leaveFullscreen:not([hidden]){
-  width:38px!important;
-  height:38px!important;
-  flex:0 0 38px!important;
-  margin:3px 0!important;
-}
-body.is-mobile.is-landscape .layout > .boardStage{
-  height:100%!important;
-  min-height:0!important;
-  overflow:hidden!important;
-}
-body.is-mobile.is-landscape .layout > .boardStage > .boardbox{
-  box-sizing:border-box!important;
-  border-width:3px!important;
-  padding:1px!important;
-  border-radius:9px!important;
-  min-height:0!important;
-  width:100%!important;
-  height:100%!important;
-  flex:1 1 auto!important;
-  margin:0!important;
-  overflow:hidden!important;
-}
-body.is-mobile.is-landscape .layout > .boardStage > .boardbox canvas{
-  display:block!important;
-  aspect-ratio:1000/720!important;
-  object-fit:contain!important;
-  flex:0 0 auto!important;
-}
 </style></head><body><div id="simpleLobby" role="dialog" aria-label="Tavla Kulübü giriş" class="simpleLobby">
 <div class="simpleLobbyCard"><div class="simpleLobbyBrand">◈ Tavla <em>Kulübü</em></div>
 <p class="simpleLobbyLead">Nasıl oynamak istersin?</p>
@@ -772,7 +722,7 @@ function findChangedChecker(oldG,newG){
  if(sources.length!==1||destinations.length!==1||sources[0].count!==1||destinations[0].count!==1)return null;
  return{from:sources[0].pos,to:destinations[0].pos,c};
 }
-function setupConn(conn,role){connection=conn;peerRole=role;conn.on('open',()=>{clearTimeout(joinTimeout);clearTimeout(signalRetry);signalAttempts=0;joinTimeout=null;$('joinQuick').disabled=false;$('joinQuick').textContent='Masaya Katıl';$('joinBanner').classList.add('hide');$('exitGame').classList.remove('hide');$('host').disabled=true;$('join').disabled=true;onlineReady=true;updateOpponentAdd();$('peerStatus').textContent='Rakip bağlandı! '+(role==='host'?(playerLabel(1)+' olarak oynuyorsun.'):(playerLabel(-1)+' olarak oynuyorsun.'));$('conn').textContent='● Arkadaşın masaya katıldı';$('conn').className='small peerConnected';$('peerStatus').textContent='✓ Arkadaşın katıldı · Oyun hazır';if(role==='host')broadcast();if(role==='guest'&&!lobby.hidden){lobby.hidden=true;$('lobbyError').textContent='';}render();});conn.on('data',data=>{if(!data||data.type!=='state'||!data.game)return;if(role==='host')return;let g=data.game;if(!Array.isArray(g.p)||g.p.length!==24||!Array.isArray(g.dice))return;const previousGame=game?clone(game):null,previous=game,rolledNow=!!g.rolled&&Array.isArray(g.lastRoll)&&(!previous?.rolled||previous.turn!==g.turn||previous.lastRoll?.[0]!==g.lastRoll[0]||previous.lastRoll?.[1]!==g.lastRoll[1]);cancelAnimationFrame(rollAnimationId);diceAnimating=false;game=g;setRemoteMovePending(false);boardDice=game.rolled&&Array.isArray(game.lastRoll)?[...game.lastRoll]:null;rollPhase=10000;history=[];guestCanUndo=!!data.canUndo;selected=null;targets=[];moveLogs=[];lastMove=null;$('goal').value=String(game.goal);if(rolledNow){showRollAnimation(game.lastRoll[0],game.lastRoll[1]);}render();if(!rolledNow){const changed=findChangedChecker(previousGame,game);if(changed)animateChecker(changed.from,changed.to,changed.c,previousGame);}});if(role==='host'){conn.on('data',d=>{if(d?.type==='move'&&game.turn===-1&&game.rolled&&!game.winner){const receivedTurn=game.turn;const tryMove=(attempt=0)=>{if(mode!=='online'||peerRole!=='host'||!onlineReady||game.winner||!game.rolled||game.turn!==receivedTurn)return;if(diceAnimating){if(attempt<24)setTimeout(()=>tryMove(attempt+1),60);return;}const m=legal(game).find(x=>x.from===d.from&&x.to===d.to&&x.die===d.die);if(m)doMove(m);else broadcast();};tryMove();}if(d?.type==='roll'&&game.turn===-1&&!game.rolled&&!diceAnimating){let a=fairDie(),b=fairDie();game.dice=a===b?[a,a,a,a]:[a,b];game.rolled=true;game.lastRoll=[a,b];game.message=playerLabel(-1)+' '+a+'–'+b+' attı.';showRollAnimation(a,b);broadcast();render();if(!legal(game).length){setTimeout(()=>{if(game.turn===-1&&game.rolled&&!game.winner&&legal(game).length===0)finishTurn();},1100);}}if(d?.type==='undo'&&game.turn===-1&&game.rolled&&!diceAnimating&&history.length){undoLastMove();}if(d?.type==='end'&&game.turn===-1&&game.rolled&&!legal(game).length&&!diceAnimating)finishTurn();});}conn.on('close',()=>{setRemoteMovePending(false);guestCanUndo=false;clearTimeout(joinTimeout);$('joinQuick').disabled=false;$('joinQuick').textContent='Yeniden Katıl';$('exitGame').classList.remove('hide');$('host').disabled=false;$('join').disabled=false;onlineReady=false;$('conn').textContent='● Arkadaş ayrıldı';$('conn').className='small peerWaiting';$('peerStatus').textContent='Bağlantı kesildi. Yeni oda açarak yeniden deneyin.';render();});conn.on('error',()=>{setRemoteMovePending(false);guestCanUndo=false;clearTimeout(joinTimeout);$('joinQuick').disabled=false;$('joinQuick').textContent='Yeniden Dene';$('peerStatus').textContent='Bağlantı hatası. Yeniden deneyin.';$('joinBanner').classList.remove('hide');});}
+function setupConn(conn,role){connection=conn;peerRole=role;conn.on('open',()=>{clearTimeout(joinTimeout);clearTimeout(signalRetry);signalAttempts=0;joinTimeout=null;$('joinQuick').disabled=false;$('joinQuick').textContent='Masaya Katıl';$('joinBanner').classList.add('hide');$('exitGame').classList.remove('hide');$('host').disabled=true;$('join').disabled=true;onlineReady=true;updateOpponentAdd();$('peerStatus').textContent='Rakip bağlandı! '+(role==='host'?(playerLabel(1)+' olarak oynuyorsun.'):(playerLabel(-1)+' olarak oynuyorsun.'));$('conn').textContent='● Arkadaşın masaya katıldı';$('conn').className='small peerConnected';$('peerStatus').textContent='✓ Arkadaşın katıldı · Oyun hazır';if(role==='host')broadcast();if(role==='guest'&&!lobby.hidden){lobby.hidden=true;$('lobbyError').textContent='';}render();});conn.on('data',data=>{if(!data||data.type!=='state'||!data.game)return;if(role==='host')return;let g=data.game;if(!Array.isArray(g.p)||g.p.length!==24||!Array.isArray(g.dice))return;const previousGame=game?clone(game):null,previous=game,rolledNow=!!g.rolled&&Array.isArray(g.lastRoll)&&(!previous?.rolled||previous.turn!==g.turn||previous.lastRoll?.[0]!==g.lastRoll[0]||previous.lastRoll?.[1]!==g.lastRoll[1]);cancelAnimationFrame(rollAnimationId);diceAnimating=false;game=g;setRemoteMovePending(false);boardDice=game.rolled&&Array.isArray(game.lastRoll)?[...game.lastRoll]:null;rollPhase=10000;history=[];guestCanUndo=!!data.canUndo;selected=null;targets=[];moveLogs=[];lastMove=null;$('goal').value=String(game.goal);if(rolledNow){showRollAnimation(game.lastRoll[0],game.lastRoll[1]);}render();if(!rolledNow){const changed=findChangedChecker(previousGame,game);if(changed)animateChecker(changed.from,changed.to,changed.c,previousGame);}});if(role==='host'){conn.on('data',d=>{if(d?.type==='move'&&game.turn===-1&&game.rolled&&!game.winner){if(diceAnimating){broadcast();return;}let m=legal(game).find(x=>x.from===d.from&&x.to===d.to&&x.die===d.die);if(m)doMove(m);else broadcast();}if(d?.type==='roll'&&game.turn===-1&&!game.rolled&&!diceAnimating){let a=fairDie(),b=fairDie();game.dice=a===b?[a,a,a,a]:[a,b];game.rolled=true;game.lastRoll=[a,b];game.message=playerLabel(-1)+' '+a+'–'+b+' attı.';showRollAnimation(a,b);broadcast();render();if(!legal(game).length){setTimeout(()=>{if(game.turn===-1&&game.rolled&&!game.winner&&legal(game).length===0)finishTurn();},1100);}}if(d?.type==='undo'&&game.turn===-1&&game.rolled&&!diceAnimating&&history.length){undoLastMove();}if(d?.type==='end'&&game.turn===-1&&game.rolled&&!legal(game).length&&!diceAnimating)finishTurn();});}conn.on('close',()=>{setRemoteMovePending(false);guestCanUndo=false;clearTimeout(joinTimeout);$('joinQuick').disabled=false;$('joinQuick').textContent='Yeniden Katıl';$('exitGame').classList.remove('hide');$('host').disabled=false;$('join').disabled=false;onlineReady=false;$('conn').textContent='● Arkadaş ayrıldı';$('conn').className='small peerWaiting';$('peerStatus').textContent='Bağlantı kesildi. Yeni oda açarak yeniden deneyin.';render();});conn.on('error',()=>{setRemoteMovePending(false);guestCanUndo=false;clearTimeout(joinTimeout);$('joinQuick').disabled=false;$('joinQuick').textContent='Yeniden Dene';$('peerStatus').textContent='Bağlantı hatası. Yeniden deneyin.';$('joinBanner').classList.remove('hide');});}
 function broadcast(){if(mode==='online'&&peerRole==='host'&&connection?.open)connection.send({type:'state',game:clone(game),canUndo:!!(history.length&&game.turn===-1&&game.rolled)});}
 
 // Misafir UI Optimistic Update (Guest Click) - DÜZELTİLDİ
