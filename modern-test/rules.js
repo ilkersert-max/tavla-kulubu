@@ -1,7 +1,7 @@
 /* Tavla rules: pure state transitions; no Canvas/DOM, no external dependencies. */
 (function(root){
 'use strict';
-const TRACK={white:Array.from({length:24},(_,i)=>23-i),black:[...Array.from({length:12},(_,i)=>11-i),...Array.from({length:12},(_,i)=>23-i)]};
+const TRACK={white:Array.from({length:24},(_,i)=>23-i),black:Array.from({length:24},(_,i)=>i)};
 const sign=side=>side==='white'?1:-1;
 function copy(x){return {...x,points:[...x.points],dice:[...x.dice],bar:{...x.bar},off:{...x.off}}}
 function basicMoves(state,die){
@@ -41,6 +41,6 @@ function legalMoves(x){
 function isValidMove(x,m){return legalMoves(x).some(a=>a.from===m.from&&a.to===m.to&&a.die===m.die)}
 function move(x,m){if(!isValidMove(x,m))throw Error('Geçersiz hamle');return apply(copy(x),m)}
 function canFinish(x){return !!x.rolled&&!x.winner&&legalMoves(x).length===0}
-function initial(){const x={points:Array(24).fill(0),turn:'white',dice:[],bar:{white:0,black:0},off:{white:0,black:0},rolled:false,winner:null};for(const [i,n] of [[23,2],[12,5],[7,3],[5,5],[11,-2],[0,-5],[19,-3],[17,-5]])x.points[i]=n;return x}
+function initial(){const x={points:Array(24).fill(0),turn:'white',dice:[],bar:{white:0,black:0},off:{white:0,black:0},rolled:false,winner:null};for(const [i,n] of [[23,2],[12,5],[8,3],[5,5],[0,-2],[11,-5],[20,-3],[18,-5]])x.points[i]=n;return x}
 root.TavlaRules=Object.freeze({TRACK,copy,basicMoves,legalMoves,move,canFinish,initial});
 })(typeof globalThis!=='undefined'?globalThis:this);
