@@ -209,6 +209,23 @@ body.is-ios.is-mobile.is-landscape .layout{height:100%!important;min-height:0!im
 body.is-ios.is-mobile.is-landscape .layout>.boardStage{min-height:0!important;overflow:hidden!important}
 body.is-ios.is-mobile.is-landscape .layout>.boardStage .boardbox{min-height:0!important;overflow:hidden!important}
 body.is-ios.is-mobile.is-landscape .layout>.boardStage canvas{display:block;max-height:100%!important}
+
+/* Proportional iPhone landscape board. The CSS box and painted canvas share
+   the same aspect ratio, keeping pointer mapping aligned with checker positions.
+   Desktop and Android are deliberately not affected. */
+body.is-ios.is-mobile.is-landscape .layout>.boardStage .boardbox{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  min-width:0!important;min-height:0!important;overflow:hidden!important;
+}
+body.is-ios.is-mobile.is-landscape .layout>.boardStage .boardbox canvas{
+  width:var(--fit-board-width,100%)!important;
+  height:var(--fit-board-height,100%)!important;
+  max-width:100%!important;max-height:100%!important;
+  aspect-ratio:1000/720!important;object-fit:contain!important;
+  flex:0 0 auto!important;
+}
+body.is-ios.is-mobile.is-landscape .layout>aside #sideFriends{display:none!important}
+body.is-ios.is-mobile.is-landscape .layout>aside .actionDock{flex-shrink:0!important}
 </style></head><body><div id="simpleLobby" role="dialog" aria-label="Tavla Kulübü giriş" class="simpleLobby">
 <div class="simpleLobbyCard"><div class="simpleLobbyBrand">◈ Tavla <em>Kulübü</em></div>
 <p class="simpleLobbyLead">Nasıl oynamak istersin?</p>
@@ -301,6 +318,21 @@ const Display=(()=>{
         ['is-fullscreen',native],['is-immersive',native||softMode||isStand],['is-standalone',isStand]
       ])doc.body.classList.toggle(name,on);
       alignCompactControls(isMobile&&landscape);
+      // iPhone landscape: fit the 1000x720 board into its actual available area.
+      // Android and desktop keep their previous sizing and interaction model.
+      if(isIOS&&isMobile&&landscape){
+        const box=doc.querySelector('.layout > .boardStage .boardbox');
+        const canvas=box?.querySelector('canvas');
+        if(box&&canvas){
+          const bw=box.clientWidth,bh=box.clientHeight;
+          if(bw>0&&bh>0){
+            const scale=Math.min(bw/1000,bh/720);
+            canvas.style.setProperty('--fit-board-width',Math.floor(1000*scale)+'px');
+            canvas.style.setProperty('--fit-board-height',Math.floor(720*scale)+'px');
+          }
+        }
+      }
+
       $('landscapeStart').classList.toggle('hide',!isMobile||landscape);
       const exit=$('leaveFullscreen');
       exit.hidden=!(native||softMode||(isMobile&&landscape));
