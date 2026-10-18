@@ -9,15 +9,30 @@ let pending=false;function invalidate(){if(pending)return;pending=true;requestAn
 function pointFromEvent(ev){const r=canvas.getBoundingClientRect(),scale=Math.min(r.width/W,r.height/H),x0=r.left+(r.width-W*scale)/2,y0=r.top+(r.height-H*scale)/2;let x=(ev.clientX-x0)/scale,y=(ev.clientY-y0)/scale;if(x<0||y<0||x>W||y>H)return null;if(gameState.viewSide==='black'){x=972-x;y=H-y}return{x,y}}
 // Core rules are kept independent from Canvas. White moves upward in index, black downward.
 const history=[],sideNum=side=>side==='white'?1:-1,owner=n=>n>0?'white':n<0?'black':null;
-function basicMoves(state,die){const side=state.turn,sign=sideNum(side),bar=state.bar[side],out=[];const froms=bar?['bar']:Array.from({length:24},(_,i)=>i).filter(i=>state.points[i]*sign>0);
- for(const from of froms){const to=from==='bar'?(side==='white'?24-die:12-die):((from-die+24)%24);
-  const remaining=from==='bar'?24:(side==='white'?from+1:((from-12+24)%24)+1);if(die<remaining){if(state.points[to]*sign>=-1)out.push({from,to,die});continue;}
-  const home=side==='white'?[0,5]:[12,17],allHome=!bar&&state.points.every((n,i)=>n*sign<=0||(i>=home[0]&&i<=home[1]));
-  if(!allHome)continue;
-  const exact=die===remaining;
-  const farther=state.points.some((n,i)=>n*sign>0&&(side==='white'?i>from:((i-12+24)%24)>((from-12+24)%24)));
+// Her iki oyuncunun yolu kendi ekranında sağ-alt bölmeye ulaşır.
+// Beyaz: 23→...→0; siyah: 11→...→0→23→...→12.
+// Siyah için 180° görüntü dönüşü SADECE çizimi etkiler, hamle verisini değil.
+const TRACK={white:Array.from({length:24},(_,i)=>23-i),black:[...Array.from({length:12},(_,i)=>11-i),...Array.from({length:12},(_,i)=>23-i)]};
+function basicMoves(state,die){
+ const side=state.turn,sign=sideNum(side),track=TRACK[side],out=[];
+ const froms=state.bar[side]>0?['bar']:track.filter(i=>state.points[i]*sign>0);
+ const allHome=state.bar[side]===0&&state.points.every((n,i)=>n*sign<=0||track.indexOf(i)>=18);
+ for(const from of froms){
+  const index=from==='bar'?-1:track.indexOf(from);
+  const destinationIndex=index+die;
+  if(destinationIndex<24){
+   const to=track[destinationIndex];
+   if(state.points[to]*sign>=-1)out.push({from,to,die});
+   continue;
+  }
+  if(from==='bar'||!allHome)continue;
+  const exact=destinationIndex===24;
+  // Fazla zarla toplama yalnızca daha uzakta pul yoksa mümkündür.
+  const farther=track.slice(0,index).some(i=>state.points[i]*sign>0);
   if(exact||!farther)out.push({from,to:'off',die});
- }return out}
+ }
+ return out;
+}
 function cloneState(x){return {points:[...x.points],turn:x.turn,viewSide:x.viewSide,dice:[...x.dice],bar:{...x.bar},off:{...x.off},rolled:x.rolled,selected:x.selected,revision:x.revision}}
 function simulate(x,m){const sign=sideNum(x.turn);if(m.from==='bar')x.bar[x.turn]--;else x.points[m.from]-=sign;if(m.to==='off')x.off[x.turn]++;else{if(x.points[m.to]===-sign){x.points[m.to]=0;x.bar[x.turn==='white'?'black':'white']++}x.points[m.to]+=sign}const di=x.dice.indexOf(m.die);if(di>=0)x.dice.splice(di,1)}
 function canFinish(x){if(!x.dice.length)return true;return !x.dice.some(d=>basicMoves(x,d).length)}
