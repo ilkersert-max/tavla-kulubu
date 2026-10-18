@@ -56,3 +56,21 @@ header{margin-bottom:6px}
  #game .board{width:min(90vw,calc((100dvh - 140px) * 10 / 7))}
 }
 @media(max-height:330px){#game .board{width:min(90vw,calc((100dvh - 105px) * 10 / 7))}}
+
+/* Tek ölçülendirme kaynağı: oyun alanının gerçekten kalan yüksekliği. */
+html,body{height:100%;overflow:hidden}
+.app{height:100dvh;display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box}
+header{flex:0 0 auto;min-height:0;margin-bottom:3px;gap:5px}
+header h1{font-size:clamp(16px,2vw,23px)}
+#game{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:4px}
+#game[hidden]{display:none}
+#game .toolbar,#game .feedback,#game .dice-strip,#game .footer{flex:0 0 auto;padding:4px 8px;gap:5px;font-size:clamp(11px,1.3vw,14px)}
+#game .toolbar button{padding:5px 9px}
+#game .board-scroll{flex:1 1 auto;min-height:0;width:100%;overflow:hidden;display:flex;align-items:center;justify-content:center}
+#game .board{box-sizing:border-box;aspect-ratio:10/7;max-height:85vh;max-width:95vw;width:min(95vw,calc(85vh * 10 / 7));height:auto;flex:0 0 auto;min-width:0;margin:0}
+#game .board.flipped{transform:rotate(180deg)}
+#game .board.flipped .checker,#game .board.flipped .number,#game .board.flipped .more,#game .board.flipped .face,#game .board.flipped .bar b{transform:rotate(180deg)}
+#game .board:not(.flipped) .checker,#game .board:not(.flipped) .number,#game .board:not(.flipped) .more,#game .board:not(.flipped) .face,#game .board:not(.flipped) .bar b{transform:none}
+#game .board .bar b{font-size:12px}
+@media(max-width:700px){.app{padding:4px}#game .footer{display:none}#game .board{border-width:5px;grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr) 40px}.board .stack{padding:12px 0}.board .checker{width:min(86%,30px)}.board .bar .checker{width:20px}#game .toolbar{flex-wrap:wrap}}
+@media(max-height:470px){#game .footer{display:none}#game .toolbar,#game .feedback,#game .dice-strip{padding:2px 7px}header{margin:0}#game .toolbar button{padding:3px 6px}}
