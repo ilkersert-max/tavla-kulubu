@@ -15,3 +15,44 @@
 .feedback{margin-bottom:8px}
 @media (max-width:700px){.board{min-width:620px;width:620px}.board-scroll{overflow-x:auto}.dice-strip{font-size:12px}}
 @media (max-height:500px) and (min-width:701px){.board{width:min(100%,90dvh)}}
+
+/* Görünür ekran yüksekliğine göre kesintisiz tahta boyutlandırma. */
+html,body{width:100%;overflow-x:hidden}
+.app{width:100%;max-width:none;padding:clamp(4px,1vmin,10px)}
+header{margin-bottom:6px}
+#game{display:flex;flex-direction:column;gap:5px;min-height:0}
+#game[hidden]{display:none}
+#game .toolbar,#game .feedback,#game .dice-strip,#game .footer{margin:0;padding:6px 10px;flex-shrink:0}
+#game .board-scroll{
+ width:100%;min-height:0;
+ display:flex;align-items:center;justify-content:center;
+ overflow:hidden
+}
+#game .board{
+ min-width:0;
+ width:min(90vw, calc(90vh * 10 / 7), calc((100dvh - 235px) * 10 / 7));
+ max-width:90vw;
+ max-height:90vh;
+ height:auto;
+ aspect-ratio:10/7;
+ flex-shrink:0;
+ margin:0 auto;
+}
+@media(max-width:700px){
+ #game .board{width:min(90vw,calc((100dvh - 235px) * 10 / 7));min-width:0}
+ .board .checker{width:min(82%,33px)}
+ .board .number{font-size:10px}
+ .board .stack{padding:16px 0}
+ .board{grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr) 42px;border-width:6px}
+ .board .bar .checker{width:22px}
+ .board .tray small{font-size:9px}
+ .board .tray strong{font-size:16px}
+}
+@media(max-height:540px){
+ header h1{font-size:17px}
+ header{margin-bottom:2px}
+ #game .toolbar,#game .feedback,#game .dice-strip{padding:3px 8px;font-size:12px}
+ #game .footer{display:none}
+ #game .board{width:min(90vw,calc((100dvh - 140px) * 10 / 7))}
+}
+@media(max-height:330px){#game .board{width:min(90vw,calc((100dvh - 105px) * 10 / 7))}}
