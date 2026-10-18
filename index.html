@@ -226,6 +226,68 @@ body.is-ios.is-mobile.is-landscape .layout>.boardStage .boardbox canvas{
 }
 body.is-ios.is-mobile.is-landscape .layout>aside #sideFriends{display:none!important}
 body.is-ios.is-mobile.is-landscape .layout>aside .actionDock{flex-shrink:0!important}
+
+/* v31 - iPhone/Android landscape control visibility regression fix.
+   The earlier .layout>aside{display:none!important} selector outranked
+   the generic 'aside{display:flex!important}' rule. */
+body.is-mobile.is-landscape .layout > aside{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  flex-direction:column!important;
+  grid-column:1!important;
+  grid-row:1!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  position:relative!important;
+  z-index:10!important;
+  padding-left:max(2px,env(safe-area-inset-left))!important;
+}
+body.is-mobile.is-landscape .layout > aside > .actionDock{
+  display:grid!important;
+  visibility:visible!important;
+  opacity:1!important;
+  position:relative!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  min-height:0!important;
+  margin-top:auto!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:4px!important;
+}
+body.is-mobile.is-landscape .layout > aside > .actionDock .dockBtn{
+  display:flex!important;
+  min-width:0!important;
+  height:clamp(34px,10dvh,43px)!important;
+  min-height:34px!important;
+  padding:2px!important;
+  touch-action:manipulation!important;
+}
+body.is-mobile.is-landscape .layout > aside > #leaveFullscreen:not([hidden]){
+  display:flex!important;
+  position:relative!important;
+  inset:auto!important;
+  flex:0 0 36px!important;
+  height:36px!important;
+  width:42px!important;
+  margin:2px!important;
+}
+body.is-mobile.is-landscape .layout > .boardStage{
+  grid-column:2!important;
+  grid-row:1!important;
+  min-width:0!important;
+  max-width:100%!important;
+}
+@media (max-height:390px){
+  body.is-mobile.is-landscape .layout > aside > .actionDock{
+    min-height:0!important;
+  }
+  body.is-mobile.is-landscape .layout > aside > .actionDock .dockBtn{
+    height:34px!important;min-height:34px!important;
+  }
+}
 </style></head><body><div id="simpleLobby" role="dialog" aria-label="Tavla Kulübü giriş" class="simpleLobby">
 <div class="simpleLobbyCard"><div class="simpleLobbyBrand">◈ Tavla <em>Kulübü</em></div>
 <p class="simpleLobbyLead">Nasıl oynamak istersin?</p>
