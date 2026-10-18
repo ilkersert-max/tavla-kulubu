@@ -28,7 +28,7 @@ export class TavlaRoom{
  server.addEventListener('close',()=>{this.connections.delete(server);this.broadcast()});server.addEventListener('error',()=>{this.connections.delete(server);this.broadcast()});
  return new Response(null,{status:101,webSocket:client})}
  send(ws,data){try{if(ws.readyState===1)ws.send(JSON.stringify(data))}catch{}}
- broadcast(extra={}){const players=[...this.connections.values()],payload={type:'state',gameState:this.game,connected:{black:players.includes(BLACK),white:players.includes(WHITE)},...extra};for(const ws of this.connections.keys())this.send(ws,payload)}
+ broadcast(extra={}){const players=[...this.connections.values()],payload={type:'state',gameState:this.game,moves:legal(this.game),connected:{black:players.includes(BLACK),white:players.includes(WHITE)},...extra};for(const ws of this.connections.keys())this.send(ws,payload)}
  async receive(ws,raw){if(!this.connections.has(ws))return;let message;try{message=JSON.parse(raw)}catch{return this.send(ws,{type:'error',message:'Geçersiz mesaj'})}
  if(!message||!['roll','move'].includes(message.type))return;const side=this.connections.get(ws);
  if(this.game.winner)return this.send(ws,{type:'error',message:'Oyun bitti'});
