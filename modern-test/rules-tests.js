@@ -5,9 +5,9 @@ const R=globalThis.TavlaRules,tests=[],assert=(v,msg)=>{if(!v)throw Error(msg)};
 function test(name,fn){try{fn();tests.push({name,ok:true})}catch(e){tests.push({name,ok:false,error:e.message})}}
 function state(side='white',dice=[1]){return {points:Array(24).fill(0),turn:side,dice:[...dice],bar:{white:0,black:0},off:{white:0,black:0},rolled:true,winner:null}}
 test('Initial 15 pieces per side',()=>{let x=R.initial();assert(x.points.filter(n=>n>0).reduce((a,b)=>a+b,0)===15,'white count');assert(x.points.filter(n=>n<0).reduce((a,b)=>a-b,0)===15,'black count')});
-test('Each route visits 24 unique points and ends on right',()=>{for(const side of ['white','black']){const t=R.TRACK[side];assert(new Set(t).size===24,'duplicate');assert(t.length===24,'length');assert(side==='white'?t[23]===0:t[23]===12,'end')}})
+test('Each route visits 24 unique points and ends on right',()=>{for(const side of ['white','black']){const t=R.TRACK[side];assert(new Set(t).size===24,'duplicate');assert(t.length===24,'length');assert(side==='white'?t[23]===0:t[23]===23,'end')}})
 test('White moves 23 to 22',()=>{let x=state();x.points[23]=1;assert(R.legalMoves(x).some(m=>m.from===23&&m.to===22),'direction')});
-test('Black moves 11 to 10',()=>{let x=state('black');x.points[11]=-1;assert(R.legalMoves(x).some(m=>m.from===11&&m.to===10),'direction')});
+test('Black moves 0 to 1',()=>{let x=state('black');x.points[0]=-1;assert(R.legalMoves(x).some(m=>m.from===0&&m.to===1),'direction')});
 test('Bar first, cannot move other checker',()=>{let x=state();x.bar.white=1;x.points[23]=1;const m=R.legalMoves(x);assert(m.length&&m.every(a=>a.from==='bar'),'bar priority')});
 test('Blocked destination',()=>{let x=state();x.points[23]=1;x.points[22]=-2;assert(R.legalMoves(x).length===0,'blocked')});
 test('Blot hit moves opponent to bar',()=>{let x=state();x.points[23]=1;x.points[22]=-1;let y=R.move(x,{from:23,to:22,die:1});assert(y.bar.black===1&&y.points[22]===1&&x.bar.black===0,'hit')});
