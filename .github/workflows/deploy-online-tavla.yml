@@ -1,0 +1,33 @@
+name: Cloudflare Online Tavla
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "cloudflare-online/**"
+      - ".github/workflows/deploy-online-tavla.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: JavaScript syntax
+        run: |
+          node --check cloudflare-online/src/index.js
+          node --check cloudflare-online/src/TavlaRoom.js
+          node --check cloudflare-online/public/app.js
+      - name: Deploy online Tavla
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: cloudflare-online
+          command: deploy
