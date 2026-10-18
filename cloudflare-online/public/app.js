@@ -36,6 +36,6 @@ $('roll').onclick=()=>send({type:'roll'});
 $('leave').onclick=()=>{if(ws){ws.onclose=null;ws.close()}show('game',false);show('lobby',true);game=null;seat=null;history.replaceState(null,'',location.pathname)};
 function newCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',v=new Uint8Array(8);crypto.getRandomValues(v);return Array.from(v,n=>chars[n%chars.length]).join('')}
 $('createRoom').onclick=()=>{const code=newCode();$('code').value=code;$('roomCode').textContent=code;$('inviteLink').textContent=location.origin+location.pathname+'?oda='+encodeURIComponent(code);show('inviteBox',true);enter(code,false)};
-$('botStart').onclick=()=>{show('inviteBox',false);enter('BOT'+newCode(),true)};
+$('botStart').onclick=()=>{show('inviteBox',false);enter('BOT'+newCode().slice(0,5),true)};
 $('copyInvite').onclick=async()=>{const link=location.origin+location.pathname+'?oda='+encodeURIComponent(room);try{await navigator.clipboard.writeText(link);$('copyInvite').textContent='Kopyalandı ✓'}catch{$('lobbyError').textContent='Davet bağlantısı: '+link}};
 const args=new URLSearchParams(location.search),incoming=args.get('oda');if(incoming&&/^[A-Z0-9]{5,12}$/i.test(incoming)){const code=incoming.toUpperCase();$('code').value=code;enter(code,args.get('bot')==='1')}
