@@ -321,7 +321,7 @@ const Display=(()=>{
       // iPhone landscape: fit the 1000x720 board into its actual available area.
       // Android and desktop keep their previous sizing and interaction model.
       if(isIOS&&isMobile&&landscape){
-        const box=doc.querySelector('.layout > .boardStage .boardbox');
+        const box=doc.querySelector?.('.layout > .boardStage .boardbox');
         const canvas=box?.querySelector('canvas');
         if(box&&canvas){
           const bw=box.clientWidth,bh=box.clientHeight;
