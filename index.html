@@ -374,6 +374,21 @@ body.controls-below .boardStage > .actionDock.below{
     margin-inline:auto!important;
   }
 }
+
+/* v36: suppress mobile browser's element-wide touch/focus flash on canvas.
+   Keep pointer/touch input and native button focus accessibility intact. */
+.boardStage,.boardbox,#board{
+  -webkit-tap-highlight-color:transparent!important;
+  -webkit-touch-callout:none!important;
+  -webkit-user-select:none!important;
+  user-select:none!important;
+}
+#board{outline:none!important;touch-action:none!important}
+.boardbox:active,.boardbox:focus-within,#board:active,#board:focus{
+  background-color:transparent;
+  filter:none!important;
+  opacity:1!important;
+}
 </style></head><body><div id="simpleLobby" role="dialog" aria-label="Tavla Kulübü giriş" class="simpleLobby">
 <div class="simpleLobbyCard"><div class="simpleLobbyBrand">◈ Tavla <em>Kulübü</em></div>
 <p class="simpleLobbyLead">Nasıl oynamak istersin?</p>
