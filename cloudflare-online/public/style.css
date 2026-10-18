@@ -6,3 +6,12 @@
 #inviteBox[hidden]{display:none}
 #inviteBox strong{font-size:17px}
 #inviteLink{font-size:13px;user-select:all;color:#ecd29d}
+
+/* Ekrana sığan masa: geniş masaüstünde tahtanın yüksekliğini viewport sınırlar. */
+.board{width:min(100%,100dvh);margin-inline:auto;min-width:0}
+.board-scroll{overflow-x:auto;max-width:100%}
+.dice-strip{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:8px 12px;background:#193b34;border:1px solid #46685e;border-radius:9px;margin-bottom:8px;font-size:14px}
+.dice-strip #dice{font-size:18px;font-weight:750;color:#ffda99}
+.feedback{margin-bottom:8px}
+@media (max-width:700px){.board{min-width:620px;width:620px}.board-scroll{overflow-x:auto}.dice-strip{font-size:12px}}
+@media (max-height:500px) and (min-width:701px){.board{width:min(100%,90dvh)}}
