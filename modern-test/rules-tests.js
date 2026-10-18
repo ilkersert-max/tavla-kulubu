@@ -11,7 +11,8 @@ test('Black moves 11 to 10',()=>{let x=state('black');x.points[11]=-1;assert(R.l
 test('Bar first, cannot move other checker',()=>{let x=state();x.bar.white=1;x.points[23]=1;const m=R.legalMoves(x);assert(m.length&&m.every(a=>a.from==='bar'),'bar priority')});
 test('Blocked destination',()=>{let x=state();x.points[23]=1;x.points[22]=-2;assert(R.legalMoves(x).length===0,'blocked')});
 test('Blot hit moves opponent to bar',()=>{let x=state();x.points[23]=1;x.points[22]=-1;let y=R.move(x,{from:23,to:22,die:1});assert(y.bar.black===1&&y.points[22]===1&&x.bar.black===0,'hit')});
-test('Higher die when only one die can be used',()=>{let x=state('white',[2,5]);x.bar.white=1;x.points[21]=-2;x.points[18]=-2;const m=R.legalMoves(x);assert(m.length===0,'both entries blocked')});
+test('Higher die when only one die can be used',()=>{let x=state('white',[2,5]);x.bar.white=1;x.points[17]=-2;const m=R.legalMoves(x);assert(m.length===1&&m[0].die===5,'must play higher die')});
+test('Both bar entries blocked',()=>{let x=state('white',[2,5]);x.bar.white=1;x.points[22]=-2;x.points[19]=-2;assert(R.legalMoves(x).length===0,'both entries blocked')});
 test('Doubles give four moves',()=>{let x=state('white',[1,1,1,1]);x.points[23]=1;for(let n=0;n<4;n++){let m=R.legalMoves(x)[0];assert(!!m,'step '+n);x=R.move(x,m)}assert(!x.dice.length,'not consumed')});
 test('Bear off only when all in home',()=>{let x=state('white',[6]);x.points[5]=14;x.points[6]=1;assert(!R.legalMoves(x).some(m=>m.to==='off'),'early');x.points[6]=0;x.points[5]=15;assert(R.legalMoves(x).some(m=>m.to==='off'),'home')});
 test('No bear off with piece on bar',()=>{let x=state();x.points[0]=14;x.bar.white=1;assert(R.legalMoves(x).every(m=>m.to!=='off'),'bar')});
