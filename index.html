@@ -413,6 +413,56 @@ body.is-mobile.is-landscape.controls-below .layout > aside > .actionDock.below{
   display:grid!important;
   grid-template-columns:repeat(2,minmax(0,1fr))!important;
 }
+
+/* v38 - conservative iPhone/Android landscape fit. Retain canvas 1000:720
+   geometry and the existing hit testing. No CSS stretch or cropping. */
+body.is-mobile.is-landscape .shell{
+  padding-top:max(2px,env(safe-area-inset-top))!important;
+  padding-bottom:max(2px,env(safe-area-inset-bottom))!important;
+  padding-left:max(2px,env(safe-area-inset-left))!important;
+  padding-right:max(2px,env(safe-area-inset-right))!important;
+}
+body.is-mobile.is-landscape .layout{
+  gap:3px!important;
+  min-height:0!important;
+  height:100%!important;
+}
+body.is-mobile.is-landscape.controls-dice .layout{
+  grid-template-columns:46px minmax(0,1fr)!important;
+}
+body.is-mobile.is-landscape.controls-dice .layout > aside{
+  padding:0!important;
+  align-items:center!important;
+}
+body.is-mobile.is-landscape.controls-dice .layout > aside > #leaveFullscreen:not([hidden]){
+  width:38px!important;
+  height:38px!important;
+  flex:0 0 38px!important;
+  margin:3px 0!important;
+}
+body.is-mobile.is-landscape .layout > .boardStage{
+  height:100%!important;
+  min-height:0!important;
+  overflow:hidden!important;
+}
+body.is-mobile.is-landscape .layout > .boardStage > .boardbox{
+  box-sizing:border-box!important;
+  border-width:3px!important;
+  padding:1px!important;
+  border-radius:9px!important;
+  min-height:0!important;
+  width:100%!important;
+  height:100%!important;
+  flex:1 1 auto!important;
+  margin:0!important;
+  overflow:hidden!important;
+}
+body.is-mobile.is-landscape .layout > .boardStage > .boardbox canvas{
+  display:block!important;
+  aspect-ratio:1000/720!important;
+  object-fit:contain!important;
+  flex:0 0 auto!important;
+}
 </style></head><body><div id="simpleLobby" role="dialog" aria-label="Tavla Kulübü giriş" class="simpleLobby">
 <div class="simpleLobbyCard"><div class="simpleLobbyBrand">◈ Tavla <em>Kulübü</em></div>
 <p class="simpleLobbyLead">Nasıl oynamak istersin?</p>
