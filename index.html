@@ -389,6 +389,30 @@ body.controls-below .boardStage > .actionDock.below{
   filter:none!important;
   opacity:1!important;
 }
+
+/* v37 mobile landscape: follow the selected control placement, without duplicates.
+   When controls live on the board, only keep the compact exit control at left. */
+body.is-mobile.is-landscape.controls-dice .layout > aside > .actionDock,
+body.is-mobile.is-landscape.controls-dice .layout > aside > .actionDock.below{
+  display:none!important;
+}
+body.is-mobile.is-landscape .layout > aside > .panel:first-of-type{
+  display:none!important;
+}
+body.is-mobile.is-landscape .layout > aside{
+  justify-content:flex-start!important;
+}
+body.is-mobile.is-landscape.controls-dice .layout{
+  grid-template-columns:clamp(50px,7vw,66px) minmax(0,1fr)!important;
+}
+body.is-mobile.is-landscape.controls-dice .layout > aside > #leaveFullscreen:not([hidden]){
+  margin:4px!important;
+}
+body.is-mobile.is-landscape.controls-below .layout > aside > .actionDock,
+body.is-mobile.is-landscape.controls-below .layout > aside > .actionDock.below{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
 </style></head><body><div id="simpleLobby" role="dialog" aria-label="Tavla Kulübü giriş" class="simpleLobby">
 <div class="simpleLobbyCard"><div class="simpleLobbyBrand">◈ Tavla <em>Kulübü</em></div>
 <p class="simpleLobbyLead">Nasıl oynamak istersin?</p>
