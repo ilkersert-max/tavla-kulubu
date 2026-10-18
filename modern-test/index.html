@@ -1,6 +1,6 @@
 <!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>Tavla Kulübü | Yeni motor testi</title><style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#112423;color:#f6e7c6;font:15px system-ui}#app{height:100dvh;display:flex;flex-direction:column;gap:6px;padding:8px}.top{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}.actions{min-width:0;flex-wrap:wrap;justify-content:flex-end}.top strong{font-size:19px}.actions{display:flex;gap:5px}button{background:#27413c;color:#f9dfad;border:1px solid #ae956c;border-radius:10px;padding:9px 12px;font:inherit;cursor:pointer}#stage{min-height:0;flex:1;display:grid;place-items:center}canvas{display:block;max-width:100%;max-height:100%;aspect-ratio:1000/720;object-fit:contain;touch-action:none;flex:none}footer{font-size:12px;opacity:.8}@media(max-width:600px){.top strong{font-size:14px}.top{align-items:flex-start}.actions{width:100%;justify-content:center}button{font-size:12px;padding:7px}}@media(max-height:450px){footer{display:none}}
-</style></head><body><div id="app"><header class="top"><strong>◆ Tavla Kulübü <small style="font-weight:normal;font-size:11px">— yeni motor testi</small></strong><div class="actions"><button id="roll">🎲 Zar at</button><button id="undo">↶ Geri al</button><button id="end">✓ Sırayı bitir</button><button id="view">Perspektif: Beyaz</button><button id="full">Tam ekran</button></div></header><div id="stage"><canvas id="board" width="1000" height="720"></canvas></div><footer id="status">Yerel hamle testi · Önce zar atın.</footer></div><script>
+</style></head><body><div id="app"><header class="top"><strong>◆ Tavla Kulübü <small style="font-weight:normal;font-size:11px">— yeni motor testi</small></strong><div class="actions"><button id="roll">🎲 Zar at</button><button id="undo">↶ Geri al</button><button id="end">✓ Sırayı bitir</button><button id="view">Perspektif: Beyaz</button><button id="full">Tam ekran</button></div></header><div id="stage"><canvas id="board" width="1000" height="720"></canvas></div><footer id="status">Yerel hamle testi · Önce zar atın.</footer></div><script src="./rules.js"></script><script>
 'use strict';
 const canvas=document.getElementById('board'),ctx=canvas.getContext('2d'),status=document.getElementById('status');const gameState={points:Array(24).fill(0),turn:'white',viewSide:'white',dice:[],selected:null,bar:{white:0,black:0},off:{white:0,black:0},rolled:false,winner:null,revision:0};for(const [i,n] of [[23,2],[12,5],[7,3],[5,5],[11,-2],[0,-5],[19,-3],[17,-5]])gameState.points[i]=n;const W=1000,H=720,left=64,right=922,barL=479,barR=519;
 function xpos(i){const n=i<12?11-i:i-12;const w=(right-left-(barR-barL))/12;return n<6?left+(n+.5)*w:barR+(n-6+.5)*w}
@@ -12,36 +12,12 @@ const history=[],sideNum=side=>side==='white'?1:-1,owner=n=>n>0?'white':n<0?'bla
 // Her iki oyuncunun yolu kendi ekranında sağ-alt bölmeye ulaşır.
 // Beyaz: 23→...→0; siyah: 11→...→0→23→...→12.
 // Siyah için 180° görüntü dönüşü SADECE çizimi etkiler, hamle verisini değil.
-const TRACK={white:Array.from({length:24},(_,i)=>23-i),black:[...Array.from({length:12},(_,i)=>11-i),...Array.from({length:12},(_,i)=>23-i)]};
-function basicMoves(state,die){
- const side=state.turn,sign=sideNum(side),track=TRACK[side],out=[];
- const froms=state.bar[side]>0?['bar']:track.filter(i=>state.points[i]*sign>0);
- const allHome=state.bar[side]===0&&state.points.every((n,i)=>n*sign<=0||track.indexOf(i)>=18);
- for(const from of froms){
-  const index=from==='bar'?-1:track.indexOf(from);
-  const destinationIndex=index+die;
-  if(destinationIndex<24){
-   const to=track[destinationIndex];
-   if(state.points[to]*sign>=-1)out.push({from,to,die});
-   continue;
-  }
-  if(from==='bar'||!allHome)continue;
-  const exact=destinationIndex===24;
-  // Fazla zarla toplama yalnızca daha uzakta pul yoksa mümkündür.
-  const farther=track.slice(0,index).some(i=>state.points[i]*sign>0);
-  if(exact||!farther)out.push({from,to:'off',die});
- }
- return out;
-}
-function cloneState(x){return {points:[...x.points],turn:x.turn,viewSide:x.viewSide,dice:[...x.dice],bar:{...x.bar},off:{...x.off},rolled:x.rolled,winner:x.winner,selected:x.selected,revision:x.revision}}
-function simulate(x,m){const sign=sideNum(x.turn);if(m.from==='bar')x.bar[x.turn]--;else x.points[m.from]-=sign;if(m.to==='off')x.off[x.turn]++;else{if(x.points[m.to]===-sign){x.points[m.to]=0;x.bar[x.turn==='white'?'black':'white']++}x.points[m.to]+=sign}const di=x.dice.indexOf(m.die);if(di>=0)x.dice.splice(di,1)}
-function canFinish(x){return x.dice.length===0||legalMoves().length===0}
-function legalMoves(){const x=gameState;if(x.winner||!x.rolled||!x.dice.length)return[];const raw=x.dice.flatMap(d=>basicMoves(x,d));if(!raw.length)return[];
- // Enforce use of maximal number of dice and the higher die when only one of two different dice can be played.
- const longest=(st,depth=0)=>{if(depth>=4||!st.dice.length)return 0;let best=0;for(const d of [...new Set(st.dice)])for(const m of basicMoves(st,d)){const n=cloneState(st);simulate(n,m);best=Math.max(best,1+longest(n,depth+1))}return best};
- let max=0,result=[];for(const m of raw){const next=cloneState(x);simulate(next,m);const count=1+longest(next);if(count>max){max=count;result=[m]}else if(count===max)result.push(m)}
- if(max===1&&x.dice.length===2&&x.dice[0]!==x.dice[1]){const high=Math.max(...x.dice);if(result.some(m=>m.die===high))result=result.filter(m=>m.die===high)}
- return result}
+// Oyun kuralları Canvas'tan bağımsız rules.js dosyasından yüklenir.
+const {legalMoves:validatedMoves,canFinish:validatedFinish,move:validatedMove}=TavlaRules;
+function legalMoves(){return validatedMoves(gameState)}
+function canFinish(x){return validatedFinish(x)}
+function cloneState(x){return {...TavlaRules.copy(x),viewSide:x.viewSide,selected:x.selected,revision:x.revision}}
+function simulate(x,m){Object.assign(x,validatedMove(x,m))}
 function refresh(){document.getElementById('roll').disabled=gameState.rolled||!!gameState.winner;document.getElementById('undo').disabled=!history.length;document.getElementById('end').disabled=!!gameState.winner||!gameState.rolled||!canFinish(gameState);const msg=gameState.rolled?(gameState.dice.length?'Zarlar: '+gameState.dice.join(', ')+' · Yeşil işaretli pulunu seç, sonra sarı hedefe dokun.': 'Hamleler tamamlandı · Sırayı bitir'):'Zar atılacak';status.textContent=(gameState.winner?(gameState.winner==='white'?'Beyaz':'Siyah')+' kazandı!':(gameState.turn==='white'?'Beyaz':'Siyah')+' oynuyor · '+msg)+' · Kırık: '+gameState.bar.white+'/'+gameState.bar.black+' · Toplanan: '+gameState.off.white+'/'+gameState.off.black;invalidate()}
 function doMove(m){history.push(cloneState(gameState));simulate(gameState,m);if(gameState.off[gameState.turn]===15)gameState.winner=gameState.turn;gameState.selected=null;gameState.revision++;refresh()}
 canvas.addEventListener('pointerup',ev=>{const p=pointFromEvent(ev);if(!p||p.y<40||p.y>680)return;let best=null,d=40;if(p.x>=940||(gameState.viewSide==='black'&&p.x<=34)){const m=legalMoves().find(m=>m.from===gameState.selected&&m.to==='off');if(m)doMove(m);else refresh();return;}if(p.x>=barL&&p.x<=barR){gameState.selected=gameState.bar[gameState.turn]>0?'bar':null;refresh();return;}for(let i=p.y<360?12:0;i<(p.y<360?24:12);i++){const di=Math.abs(p.x-xpos(i));if(di<d){d=di;best=i}}const moves=legalMoves();let target=moves.find(m=>m.from===gameState.selected&&m.to===best);if(target)doMove(target);else{gameState.selected=moves.some(m=>m.from===best)?best:null;refresh()}});
