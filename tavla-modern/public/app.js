@@ -27,12 +27,12 @@ function render(){if(!game)return;$('identity').textContent='Sen: '+name(seat)+'
  else if(game.winner)notice(game.mars?'Mars! '+name(game.winner)+' kazandı.':name(game.winner)+' kazandı!');
  else if(myTurn&&game.rolled)notice(game.bar[seat]?'Önce bardaki pulunu oyuna sok.':'Bir pul seç, ardından yeşil hedefe dokun.');
 }
-function play(from,to){const move=moves.find(m=>m.from===from&&m.to===to);if(!move)return false;send({type:'move',from:move.from,to:move.to,die:move.die});selected=null;return true}
+function play(from,to){const move=moves.find(m=>m.from===from&&m.to===to);if(!move)return false;send({type:'move',from:move.from,to:move.to,die:move.die,version:game.version});selected=null;return true}
 function clickPoint(n){if(!game||seat!==game.turn||!game.rolled||game.winner)return;if(game.bar[seat]>0){selected='bar';if(!play('bar',n))notice('Kırık pul için geçerli giriş seç.');render();return}if(selected!==null&&play(selected,n)){render();return}if(moves.some(m=>m.from===n)){selected=n;render()}else notice('Bu hane için geçerli hamle yok.')}
 $('bar').onclick=()=>{if(game&&game.turn===seat&&game.bar[seat]>0){selected='bar';render()}};
 for(const [side,id] of [[WHITE,'whiteTray'],[BLACK,'blackTray']])$(id).onclick=()=>{if(game&&seat===game.turn&&seat===side)if(!play(selected,'off'))notice('Önce toplanabilecek bir pul seç.')};
 $('join').onsubmit=e=>{e.preventDefault();const code=$('code').value.trim().toUpperCase();if(!/^[A-Z0-9]{5,8}$/.test(code)){ $('lobbyError').textContent='5–8 harf veya rakam girin.';return}enter(code,false)};
-$('roll').onclick=()=>send({type:'roll'});
+$('roll').onclick=()=>{if(game&&game.turn===seat&&!game.rolled)send({type:'roll',version:game.version})};
 $('leave').onclick=()=>{if(ws){ws.onclose=null;ws.close()}show('game',false);show('lobby',true);game=null;seat=null;history.replaceState(null,'',location.pathname)};
 function newCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',v=new Uint8Array(8);crypto.getRandomValues(v);return Array.from(v,n=>chars[n%chars.length]).join('')}
 $('createRoom').onclick=()=>{const code=newCode();$('code').value=code;$('roomCode').textContent=code;$('inviteLink').textContent=location.origin+location.pathname+'?oda='+encodeURIComponent(code);show('inviteBox',true);enter(code,false)};
