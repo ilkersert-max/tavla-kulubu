@@ -53,3 +53,33 @@ button:disabled{opacity:.45;cursor:default}
 .footer{justify-content:center;font-size:11px}
 @media(max-width:700px){.app{padding:4px}.toolbar,.feedback,.dice-strip{padding:3px 6px;font-size:11px}.toolbar button{padding:4px 7px}.footer{display:none}.stack{padding:10px 0}.checker{border-width:1px}#inviteBox{font-size:11px}}
 @media(max-height:510px){header h1{font-size:15px}.app{gap:2px}.toolbar,.feedback,.dice-strip{padding:2px 5px}.footer{display:none}.board .stack{padding:7px 0}}
+
+/* Landscape game stage: large board, fixed right-side bear-off trays */
+#game{gap:2px}
+#game .toolbar,#game .feedback,#game .dice-strip{padding:2px 7px;min-height:0}
+#game .feedback{font-size:11px;line-height:1.15}
+#game .dice-strip{font-size:11px;flex-wrap:nowrap}
+#game .dice-strip #counters{font-size:10px}
+.board-scroll{flex:1;min-height:0;width:100%;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.board-shell{height:auto;aspect-ratio:1.88;max-width:98vw;max-height:100%;display:grid;grid-template-columns:minmax(0,1fr) 7%;gap:0;min-width:0;flex:none;align-items:stretch}
+.board-shell .board{width:100%!important;max-width:none;max-height:none;height:100%;min-width:0;aspect-ratio:auto;grid-template-columns:minmax(0,1fr) 5.5% minmax(0,1fr);grid-template-rows:repeat(2,minmax(0,1fr));border-radius:10px 0 0 10px;box-shadow:none}
+.board-shell .tray-dock{display:grid;grid-template-rows:repeat(2,minmax(0,1fr));border:clamp(3px,.7vmin,8px) solid #b47b44;border-left:0;border-radius:0 10px 10px 0;background:#734322;min-width:0}
+.board-shell .tray{grid-column:1;min-width:0;border-bottom:1px solid #bc8f59;padding:2px}
+.board-shell .tray.top{grid-row:1}
+.board-shell .tray.bottom{grid-row:2}
+.board-shell .tray strong{font-size:clamp(13px,2.8vmin,26px)}
+.board-shell .tray small{font-size:clamp(7px,1.4vmin,11px);word-break:break-word}
+.board-shell .checker{width:min(88%,clamp(20px,6.2vmin,54px))}
+.board-shell .bar .checker{width:min(90%,clamp(15px,4.5vmin,34px))}
+.board-shell .stack{gap:1px;padding:clamp(7px,2.6vmin,22px) 0}
+.board-shell .number{font-size:clamp(9px,1.9vmin,14px)}
+@media(orientation:landscape){
+ .app{gap:2px;padding:3px 5px}
+ header{height:22px;min-height:22px}
+ header h1{font-size:16px}
+ #game .toolbar{min-height:30px;flex-wrap:nowrap}
+ #game .toolbar button{padding:3px 9px}
+ #game .footer{display:none}
+ #game .dice-strip{min-height:24px}
+ #game .feedback{min-height:19px}
+}
