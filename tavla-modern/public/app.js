@@ -38,5 +38,15 @@ function newCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',v=new Uint8Arr
 $('createRoom').onclick=()=>{const code=newCode();$('code').value=code;$('roomCode').textContent=code;$('inviteLink').textContent=location.origin+location.pathname+'?oda='+encodeURIComponent(code);show('inviteBox',true);enter(code,false)};
 $('botStart').onclick=()=>{show('inviteBox',false);enter('BOT'+newCode().slice(0,5),true)};
 $('copyInvite').onclick=async()=>{const link=location.origin+location.pathname+'?oda='+encodeURIComponent(room);try{await navigator.clipboard.writeText(link);$('copyInvite').textContent='Kopyalandı ✓'}catch{$('lobbyError').textContent='Davet bağlantısı: '+link}};
-const stage=$('board').parentElement;function fitBoard(){const w=stage.clientWidth,h=stage.clientHeight;if(w<1||h<1)return;const size=Math.max(1,Math.floor(Math.min(w,window.innerWidth*.95,h*10/7,window.innerHeight*.85*10/7)));$('board').style.width=size+'px'}if('ResizeObserver' in window)new ResizeObserver(fitBoard).observe(stage);window.addEventListener('resize',fitBoard);fitBoard();
+const stage=document.querySelector('.board-scroll');const shell=$('boardShell');
+function fitBoard(){
+ const width=stage.clientWidth,height=stage.clientHeight;if(width<1||height<1)return;
+ // The entire board + right tray is measured as one landscape component.
+ const shellWidth=Math.floor(Math.min(width*.985,height*1.88));
+ shell.style.width=Math.max(1,shellWidth)+'px';
+}
+if('ResizeObserver' in window)new ResizeObserver(fitBoard).observe(stage);
+window.addEventListener('resize',fitBoard);
+window.visualViewport?.addEventListener('resize',fitBoard);
+fitBoard();
 const args=new URLSearchParams(location.search),incoming=args.get('oda');if(incoming&&/^[A-Z0-9]{5,12}$/i.test(incoming)){const code=incoming.toUpperCase();$('code').value=code;enter(code,args.get('bot')==='1')}
