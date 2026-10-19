@@ -1,0 +1,32 @@
+name: Tavla Modern - test and deploy
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tavla-modern/**"
+      - ".github/workflows/tavla-modern.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: JavaScript syntax validation
+        run: |
+          node --check tavla-modern/src/index.js
+          node --check tavla-modern/src/TavlaRoom.js
+          node --check tavla-modern/public/app.js
+      - name: Rules regression tests
+        run: node --test tavla-modern/tests/*.test.mjs
+      - name: Deploy separate Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: tavla-modern
+          command: deploy
