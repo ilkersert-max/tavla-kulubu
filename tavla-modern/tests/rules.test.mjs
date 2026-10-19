@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {testRules} from '../src/TavlaRoom.js';
+const {firstState,legal,apply,entry,home,fullDoor,candidates}=testRules;
+const WHITE=1,BLACK=-1;
+const fresh=()=>firstState();
+test('Initial piece totals and orientation',()=>{const s=fresh();assert.equal(s.points.filter(x=>x>0).reduce((a,x)=>a+x,0),15);assert.equal(s.points.filter(x=>x<0).reduce((a,x)=>a-x,0),15);assert.equal(s.points[1],2);assert.equal(s.points[24],-2)});
+test('Bar entry respects 2 directions',()=>{assert.deepEqual([1,6].map(d=>entry(BLACK,d)),[6,1]);assert.deepEqual([1,6].map(d=>entry(WHITE,d)),[19,24])});
+test('Black moves 24 to 1',()=>{const s=fresh();s.rolled=true;s.dice=[3,4];assert.ok(legal(s).some(m=>m.from===24&&m.to===21))});
+test('White moves 1 to 24',()=>{const s=fresh();s.turn=WHITE;s.rolled=true;s.dice=[3,4];assert.ok(legal(s).some(m=>m.from===1&&m.to===4))});
+test('Bar forces entry first',()=>{const s=fresh();s.bar[BLACK]=1;s.rolled=true;s.dice=[1,2];assert.ok(legal(s).every(m=>m.from==='bar'))});
+test('Six-point closed gate',()=>{const s=fresh();s.bar[BLACK]=1;for(let p=1;p<=6;p++)s.points[p]=2;assert.equal(fullDoor(s,BLACK),true);s.points[3]=1;assert.equal(fullDoor(s,BLACK),false)});
+test('Bearing off both sides',()=>{for(const side of [BLACK,WHITE]){const s=fresh();s.points.fill(0);s.turn=side;s.points[side===BLACK?1:24]=side*15;s.rolled=true;s.dice=[1,2];assert.equal(home(s,side),true);assert.ok(legal(s).some(m=>m.to==='off'));const m=legal(s).find(m=>m.to==='off');const n=apply(s,m);assert.equal(n.off[side],1)}});
+test('Overshoot only farthest checker',()=>{const s=fresh();s.points.fill(0);s.points[4]=-1;s.points[6]=-14;s.rolled=true;s.dice=[5];assert.ok(!legal(s).some(m=>m.from===4&&m.to==='off'));assert.ok(legal(s).some(m=>m.from===6&&m.to==='off')===false)});
+test('Double dice allow 4 moves',()=>{const s=fresh();s.rolled=true;s.dice=[1,1,1,1];const m=legal(s)[0];const n=apply(s,m);assert.equal(n.dice.length,3)});
