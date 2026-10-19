@@ -38,6 +38,33 @@ function newCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',v=new Uint8Arr
 $('createRoom').onclick=()=>{const code=newCode();$('code').value=code;$('roomCode').textContent=code;$('inviteLink').textContent=location.origin+location.pathname+'?oda='+encodeURIComponent(code);show('inviteBox',true);enter(code,false)};
 $('botStart').onclick=()=>{show('inviteBox',false);enter('BOT'+newCode().slice(0,5),true)};
 $('copyInvite').onclick=async()=>{const link=location.origin+location.pathname+'?oda='+encodeURIComponent(room);try{await navigator.clipboard.writeText(link);$('copyInvite').textContent='Kopyalandı ✓'}catch{$('lobbyError').textContent='Davet bağlantısı: '+link}};
+const fullscreenButton=$('fullscreenToggle');
+function refreshFullscreenState(){
+ const active=!!(document.fullscreenElement||document.webkitFullscreenElement);
+ fullscreenButton.textContent=active?'⤢':'⛶';
+ fullscreenButton.title=active?'Tam ekrandan çık':'Tam ekran';
+ document.body.classList.toggle('immersive',active);
+ fitBoard();
+}
+fullscreenButton.addEventListener('click',async()=>{
+ const root=document.documentElement;
+ const active=!!(document.fullscreenElement||document.webkitFullscreenElement);
+ if(active){
+   try{if(document.exitFullscreen)await document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen()}catch{}
+   refreshFullscreenState();return;
+ }
+ // Fullscreen request must be performed directly within this user gesture.
+ let req;
+ try{
+   if(root.requestFullscreen)req=root.requestFullscreen();
+   else if(root.webkitRequestFullscreen)req=root.webkitRequestFullscreen();
+   else{notice('Bu tarayıcı tam ekran API desteği sunmuyor. Tarayıcı menüsündeki ana ekrana ekleme seçeneğini kullanabilirsin.');return}
+ }catch{notice('Tarayıcı tam ekran açılmasına izin vermedi.');return}
+ try{await req;if(screen.orientation?.lock)await screen.orientation.lock('landscape').catch(()=>{})}catch{notice('Tam ekran veya yatay kilidi bu tarayıcıda desteklenmiyor.')}
+ refreshFullscreenState();
+});
+document.addEventListener('fullscreenchange',refreshFullscreenState);
+document.addEventListener('webkitfullscreenchange',refreshFullscreenState);
 const stage=document.querySelector('.board-scroll');const shell=$('boardShell');
 function fitBoard(){
  const width=stage.clientWidth,height=stage.clientHeight;if(width<1||height<1)return;
