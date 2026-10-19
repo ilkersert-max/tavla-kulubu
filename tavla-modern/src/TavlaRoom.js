@@ -25,14 +25,14 @@ export class TavlaRoom{
  if(side===null)return new Response('Oda dolu',{status:403});
  const [client,server]=Object.values(new WebSocketPair());server.accept();
  for(const [socket,seat] of this.connections)if(seat===side){try{socket.close(4001,'Yeni bağlantı')}catch{}this.connections.delete(socket)}
- this.connections.set(server,side);await this.ctx.storage.put('seats',this.seats);this.send(server,{type:'welcome',side,token:issued});this.broadcast();if(this.botMode&&this.game.turn===BLACK&&!this.game.winner){this.pending=(this.pending||Promise.resolve()).then(()=>this.playBotTurn()).catch(()=>{})}
+ this.connections.set(server,side);await this.ctx.storage.put('seats',this.seats);this.send(server,{type:'welcome',side,token:issued});this.broadcast();if(this.botMode&&this.game.turn===BLACK&&!this.game.winner){await this.playBotTurn()}
  server.addEventListener('message',event=>{this.pending=(this.pending||Promise.resolve()).then(()=>this.receive(server,event.data)).catch(()=>this.send(server,{type:'error',message:'İşlem tamamlanamadı'}))});
  server.addEventListener('close',()=>{this.connections.delete(server);this.broadcast()});server.addEventListener('error',()=>{this.connections.delete(server);this.broadcast()});
  return new Response(null,{status:101,webSocket:client})}
  send(ws,data){try{if(ws.readyState===1)ws.send(JSON.stringify(data))}catch{}}
  broadcast(extra={}){const players=[...this.connections.values()],payload={type:'state',gameState:this.game,moves:legal(this.game),connected:{black:this.botMode||players.includes(BLACK),white:players.includes(WHITE)},bot:this.botMode,...extra};for(const ws of this.connections.keys())this.send(ws,payload)}
  async receive(ws,raw){if(!this.connections.has(ws))return;let message;try{message=JSON.parse(raw)}catch{return this.send(ws,{type:'error',message:'Geçersiz mesaj'})}
- if(!message||!['roll','move'].includes(message.type))return;const side=this.connections.get(ws);
+ if(!message||!['roll','move'].includes(message.type))return;if(message.version!==this.game.version){this.send(ws,{type:'error',message:'Oyun durumu değişti; güncel hamleyi seç.'});this.broadcast();return}const side=this.connections.get(ws);
  if(this.game.winner)return this.send(ws,{type:'error',message:'Oyun bitti'});
  if(this.game.turn!==side)return this.send(ws,{type:'error',message:'Sıra sende değil'});
  if(!this.botMode&&new Set(this.connections.values()).size!==2)return this.send(ws,{type:'error',message:'Rakip bekleniyor'});
