@@ -1,0 +1,76 @@
+:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;min-height:100%;font:15px system-ui;background:#102823;color:#f8e7c6}.app{max-width:1250px;margin:auto;padding:12px}header,.toolbar,.footer{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}header{margin-bottom:16px}h1{margin:0;font-size:28px}button,input{font:inherit;border:1px solid #bc945e;border-radius:10px;padding:10px 14px;background:#244e40;color:#ffecc9}button{cursor:pointer}button:disabled{opacity:.4;cursor:default}input{min-width:240px}#lobby{max-width:600px;margin:70px auto;text-align:center;padding:30px;border-radius:20px;border:1px solid #a8895b;background:#193c33}#join{display:flex;justify-content:center;flex-wrap:wrap;gap:10px}#lobbyError{color:#ffb5a0}.toolbar,.feedback,.footer{padding:10px;margin-bottom:8px;border-radius:10px;background:#1c4036}.board-scroll{overflow-x:auto}.board{min-width:640px;aspect-ratio:1000/700;display:grid;grid-template-columns:minmax(0,1fr) 52px minmax(0,1fr) 68px;grid-template-rows:1fr 1fr;border:12px solid #b7814b;border-radius:15px;background:#19444c;overflow:hidden;box-shadow:0 15px 30px #0008}.board.flipped{transform:rotate(180deg)}.quad{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));min-width:0}.tl{grid-area:1/1}.tr{grid-area:1/3}.bl{grid-area:2/1}.br{grid-area:2/3}.point{position:relative;overflow:hidden;min-width:0;border:0;background:transparent;padding:0;display:flex;align-items:center;flex-direction:column;touch-action:manipulation}.point.top{justify-content:flex-start}.point.bottom{justify-content:flex-end}.point::before{content:"";position:absolute;inset:0 1px;background:var(--triangle);clip-path:polygon(0 0,100% 0,50% 76%)}.point.bottom::before{clip-path:polygon(50% 24%,0 100%,100% 100%)}.point.valid{background:#4fff7755;box-shadow:inset 0 0 0 4px #80efa0}.point.selected{box-shadow:inset 0 0 0 4px #ffe088}.point.home{background:#6beabb15}.number{z-index:3;position:absolute;top:4px;font-size:12px;color:#f8e8b9;text-shadow:0 2px 3px #000}.point.bottom .number{top:auto;bottom:4px}.stack{width:100%;display:flex;flex-direction:column;align-items:center;gap:1px;padding:22px 0;z-index:2;min-height:0}.bottom .stack{flex-direction:column-reverse}.checker{width:min(80%,40px);aspect-ratio:1;flex:none;border-radius:50%;border:3px solid;box-shadow:inset 0 3px 6px #fff5,0 2px 4px #0008}.checker.white{background:radial-gradient(circle at 30% 20%,#fffef0,#c4aa84);border-color:#907348}.checker.black{background:radial-gradient(circle at 30% 20%,#4b6470,#131c24);border-color:#abc4c8}.more{z-index:4;font-size:13px;font-weight:bold;background:#172927;color:#fff0ca;padding:1px 5px;border-radius:8px}.board.flipped .checker,.board.flipped .number,.board.flipped .more,.board.flipped .face,.board.flipped .bar b{transform:rotate(180deg)}.bar{grid-area:1/2/3/3;background:linear-gradient(90deg,#5d331b,#a46c39,#5d331b);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:15px 3px;cursor:pointer}.bar b{color:#ead1a3}.bar .checker{width:32px;display:block}.tray{grid-column:4;display:flex;align-items:center;justify-content:center;text-align:center;background:#633519;border-left:3px solid #c18b52;cursor:pointer}.tray.top{grid-row:1}.tray.bottom{grid-row:2}.tray.valid{background:#236c48}.tray strong{display:block;font-size:25px}.tray small{font-size:12px}.footer{margin-top:8px;font-size:13px}@media(max-width:700px){.app{padding:7px}h1{font-size:20px}.board{border-width:8px}}
+/* İki oyun modu ve paylaşılabilir davet paneli */
+.entry-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:22px 0}
+.entry-actions button{font-weight:700;min-height:48px}
+#inviteBox{margin:12px 0;padding:12px 16px;border:1px solid #ac8b55;border-radius:12px;background:#183e33;overflow-wrap:anywhere}
+#inviteBox[hidden]{display:none}
+#inviteBox strong{font-size:17px}
+#inviteLink{font-size:13px;user-select:all;color:#ecd29d}
+
+/* Ekrana sığan masa: geniş masaüstünde tahtanın yüksekliğini viewport sınırlar. */
+.board{width:min(100%,100dvh);margin-inline:auto;min-width:0}
+.board-scroll{overflow-x:auto;max-width:100%}
+.dice-strip{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:8px 12px;background:#193b34;border:1px solid #46685e;border-radius:9px;margin-bottom:8px;font-size:14px}
+.dice-strip #dice{font-size:18px;font-weight:750;color:#ffda99}
+.feedback{margin-bottom:8px}
+@media (max-width:700px){.board{min-width:620px;width:620px}.board-scroll{overflow-x:auto}.dice-strip{font-size:12px}}
+@media (max-height:500px) and (min-width:701px){.board{width:min(100%,90dvh)}}
+
+/* Görünür ekran yüksekliğine göre kesintisiz tahta boyutlandırma. */
+html,body{width:100%;overflow-x:hidden}
+.app{width:100%;max-width:none;padding:clamp(4px,1vmin,10px)}
+header{margin-bottom:6px}
+#game{display:flex;flex-direction:column;gap:5px;min-height:0}
+#game[hidden]{display:none}
+#game .toolbar,#game .feedback,#game .dice-strip,#game .footer{margin:0;padding:6px 10px;flex-shrink:0}
+#game .board-scroll{
+ width:100%;min-height:0;
+ display:flex;align-items:center;justify-content:center;
+ overflow:hidden
+}
+#game .board{
+ min-width:0;
+ width:min(90vw, calc(90vh * 10 / 7), calc((100dvh - 235px) * 10 / 7));
+ max-width:90vw;
+ max-height:90vh;
+ height:auto;
+ aspect-ratio:10/7;
+ flex-shrink:0;
+ margin:0 auto;
+}
+@media(max-width:700px){
+ #game .board{width:min(90vw,calc((100dvh - 235px) * 10 / 7));min-width:0}
+ .board .checker{width:min(82%,33px)}
+ .board .number{font-size:10px}
+ .board .stack{padding:16px 0}
+ .board{grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr) 42px;border-width:6px}
+ .board .bar .checker{width:22px}
+ .board .tray small{font-size:9px}
+ .board .tray strong{font-size:16px}
+}
+@media(max-height:540px){
+ header h1{font-size:17px}
+ header{margin-bottom:2px}
+ #game .toolbar,#game .feedback,#game .dice-strip{padding:3px 8px;font-size:12px}
+ #game .footer{display:none}
+ #game .board{width:min(90vw,calc((100dvh - 140px) * 10 / 7))}
+}
+@media(max-height:330px){#game .board{width:min(90vw,calc((100dvh - 105px) * 10 / 7))}}
+
+/* Tek ölçülendirme kaynağı: oyun alanının gerçekten kalan yüksekliği. */
+html,body{height:100%;overflow:hidden}
+.app{height:100dvh;display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box}
+header{flex:0 0 auto;min-height:0;margin-bottom:3px;gap:5px}
+header h1{font-size:clamp(16px,2vw,23px)}
+#game{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:4px}
+#game[hidden]{display:none}
+#game .toolbar,#game .feedback,#game .dice-strip,#game .footer{flex:0 0 auto;padding:4px 8px;gap:5px;font-size:clamp(11px,1.3vw,14px)}
+#game .toolbar button{padding:5px 9px}
+#game .board-scroll{flex:1 1 auto;min-height:0;width:100%;overflow:hidden;display:flex;align-items:center;justify-content:center}
+#game .board{box-sizing:border-box;aspect-ratio:10/7;max-height:85vh;max-width:95vw;width:min(95vw,calc(85vh * 10 / 7));height:auto;flex:0 0 auto;min-width:0;margin:0}
+#game .board.flipped{transform:rotate(180deg)}
+#game .board.flipped .checker,#game .board.flipped .number,#game .board.flipped .more,#game .board.flipped .face,#game .board.flipped .bar b{transform:rotate(180deg)}
+#game .board:not(.flipped) .checker,#game .board:not(.flipped) .number,#game .board:not(.flipped) .more,#game .board:not(.flipped) .face,#game .board:not(.flipped) .bar b{transform:none}
+#game .board .bar b{font-size:12px}
+@media(max-width:700px){.app{padding:4px}#game .footer{display:none}#game .board{border-width:5px;grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr) 40px}.board .stack{padding:12px 0}.board .checker{width:min(86%,30px)}.board .bar .checker{width:20px}#game .toolbar{flex-wrap:wrap}}
+@media(max-height:470px){#game .footer{display:none}#game .toolbar,#game .feedback,#game .dice-strip{padding:2px 7px}header{margin:0}#game .toolbar button{padding:3px 6px}}
