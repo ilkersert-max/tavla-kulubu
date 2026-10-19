@@ -83,3 +83,18 @@ button:disabled{opacity:.45;cursor:default}
  #game .dice-strip{min-height:24px}
  #game .feedback{min-height:19px}
 }
+
+/* Noktasal mobil düzeltme: beşli pul dizileri orta çizgide çakışmasın. */
+@media (orientation: landscape) {
+  .board-shell .checker { width:min(88%,clamp(14px,4.6dvh,34px)); }
+  .board-shell .stack { gap:1px;padding:clamp(4px,1.4dvh,12px) 0; }
+  .board-shell .tray .face { max-width:100%;min-width:0; }
+  .board-shell .tray small {
+    display:block;
+    font-size:clamp(7px,1.3vmin,10px);
+    line-height:1.18;
+    word-break:normal;
+    overflow-wrap:normal;
+    white-space:normal;
+  }
+}
