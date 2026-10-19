@@ -112,3 +112,42 @@ body.immersive #game .feedback{display:none}
 body.immersive #game .dice-strip{min-height:23px}
 body.immersive .board-scroll{min-height:0}
 .board-shell{overflow:visible}
+
+/* Backgammon.js upstream artwork restoration.
+ * Source: https://github.com/quasoft/backgammonjs (MIT, copyright 2015 quasoft)
+ * Modern web socket transport remains separate from the graphics.
+ */
+:root{--upstream-images:url("https://raw.githubusercontent.com/quasoft/backgammonjs/master/app/browser/images/background-photo.jpg")}
+html,body{background:#333 url("https://raw.githubusercontent.com/quasoft/backgammonjs/master/app/browser/images/background-photo.jpg") center center/cover no-repeat fixed;color:#2c2c2c}
+.app{background:transparent}
+#game .toolbar,#game .dice-strip,#game .feedback,#game .footer{background:rgba(249,247,241,.93);color:#262626;border:1px solid #ddd;border-radius:3px}
+header{color:#fff;text-shadow:0 1px 2px #000}
+button,input{border-radius:4px;border:1px solid #bbb;background:#f7f7f7;color:#222}
+button:hover:not(:disabled){background:#e6e6e6}
+#roll,#botStart,#createRoom{background:#337ab7;color:#fff;border-color:#2e6da4}
+#lobby{background:rgba(255,255,255,.95);color:#242424;border-radius:5px;border:1px solid #ddd}
+#inviteBox{background:#f3f3f3;color:#242424}
+.board-shell{aspect-ratio:1.88}
+.board-shell .board{
+ background:#fff1dd;
+ border:clamp(3px,.7vmin,9px) solid #5e4733;
+ border-radius:0;
+ box-shadow:none;
+ grid-template-columns:minmax(0,1fr) 8% minmax(0,1fr);
+}
+.board-shell .bar{background:#5e4733 url("https://raw.githubusercontent.com/quasoft/backgammonjs/master/app/browser/images/v-line.gif") repeat-y center center;padding:4px 1px}
+.board-shell .bar b{color:#f5e5c9}
+.board-shell .point.home{background:transparent}
+.board-shell .point::before{background:none;clip-path:none;inset:0;background-size:100% 100%;background-repeat:no-repeat}
+.board-shell .point.top:nth-child(odd)::before{background-image:url("https://raw.githubusercontent.com/quasoft/backgammonjs/master/app/browser/images/row1-triangle-light.gif")}
+.board-shell .point.top:nth-child(even)::before{background-image:url("https://raw.githubusercontent.com/quasoft/backgammonjs/master/app/browser/images/row1-triangle-dark.gif")}
+.board-shell .point.bottom:nth-child(odd)::before{background-image:url("https://raw.githubusercontent.com/quasoft/backgammonjs/master/app/browser/images/row2-triangle-light.gif")}
+.board-shell .point.bottom:nth-child(even)::before{background-image:url("https://raw.githubusercontent.com/quasoft/backgammonjs/master/app/browser/images/row2-triangle-dark.gif")}
+.board-shell .checker{border:0;box-shadow:none;background-size:100% 100%;background-repeat:no-repeat;background-position:center}
+.board-shell .checker.white{background-image:url("https://raw.githubusercontent.com/quasoft/backgammonjs/master/app/browser/images/piece-white-2.png");background-color:transparent}
+.board-shell .checker.black{background-image:url("https://raw.githubusercontent.com/quasoft/backgammonjs/master/app/browser/images/piece-black-2.png");background-color:transparent}
+.board-shell .tray-dock{border-color:#5e4733;background:#5e4733;border-radius:0}
+.board-shell .tray{background:#5e4733;color:#fff1dd;border-bottom-color:#82664d}
+.board-shell .number{color:#6b553f;text-shadow:0 1px #fff5}
+.board-shell .point.valid{background:#46b77635;box-shadow:inset 0 0 0 2px #49a64a}
+.board-shell .point.selected{box-shadow:inset 0 0 0 2px #e4ad28}
