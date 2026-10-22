@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tavla</title>
+<style>
+  :root{
+    --wood:#8b5a2b; --wood-dark:#6d4520; --felt:#0f6e4f; --felt-dark:#0a523c;
+    --point-light:#f0d9b5; --point-dark:#7a4a21;
+    --white:#f5f5f5; --black:#1c1c1c;
+    --accent:#e8b04b;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:#2b2b2b; color:#eee; min-height:100vh;
+    display:flex; flex-direction:column; align-items:center; padding:16px; gap:12px;
+  }
+  h1{font-size:20px; font-weight:600; letter-spacing:.5px;}
+  .controls{display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:center;}
+  button{
+    font:inherit; font-size:14px; padding:8px 16px; border-radius:8px;
+    border:1px solid #555; background:#3a3a3a; color:#eee; cursor:pointer;
+    transition:background .15s;
+  }
+  button:hover:not(:disabled){background:#4a4a4a;}
+  button:disabled{opacity:.4; cursor:not-allowed;}
+  button.primary{background:var(--accent); border-color:var(--accent); color:#222; font-weight:600;}
+  button.primary:hover:not(:disabled){filter:brightness(1.1); background:var(--accent);}
+  select{font:inherit; font-size:14px; padding:7px 8px; border-radius:8px; background:#3a3a3a; color:#eee; border:1px solid #555;}
+  #status{font-size:15px; min-height:22px; text-align:center;}
+  #status b{color:var(--accent);}
+
+  .table{display:flex; gap:8px; width:100%; max-width:860px;}
+  .side{display:flex; flex-direction:column; gap:8px; width:56px;}
+  .tray{
+    flex:1; min-height:0; border-radius:10px; background:var(--felt-dark);
+    border:2px solid var(--wood-dark); display:flex; flex-direction:column; align-items:center;
+    justify-content:flex-end; padding:6px; cursor:default; position:relative;
+  }
+  .tray .label{position:absolute; top:6px; font-size:12px; color:#cdeeda; }
+  .tray.target{outline:3px solid var(--accent); cursor:pointer;}
+  .tray .pip{width:26px; height:26px; border-radius:50%; margin-top:-14px;}
+  .tray.won .pip{background:var(--white);}
+  .tray.black .pip{background:#111; border:2px solid #666;}
+
+  #board{
+    flex:1; background:var(--wood); border-radius:12px; padding:10px;
+    box-shadow:inset 0 0 0 3px var(--wood-dark), 0 8px 24px rgba(0,0,0,.5);
+    display:flex; flex-direction:column; gap:10px; user-select:none;
+  }
+  .row{display:flex; gap:6px; height:190px;}
+  .quadrant{display:flex; gap:4px; flex:1;}
+  .bar{
+    width:36px; background:var(--wood-dark); border-radius:6px; position:relative;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+  }
+  .point{
+    flex:1; position:relative; cursor:pointer;
+  }
+  .point .tri{
+    position:absolute; left:0; right:0; height:72%;
+    clip-path:polygon(50% 100%, 0 0, 100% 0);
+  }
+ .row.bottom .point .tri{top:auto; bottom:0; clip-path:polygon(0 100%, 100% 100%, 50% 0);}
+  .row.top .point .tri{top:0;}
+  .point.light .tri{background:var(--point-light);}
+  .point.dark .tri{background:var(--point-dark);}
+  .point.sel{filter:drop-shadow(0 0 4px var(--accent));}
+  .point .tri.hl{background:var(--accent) !important; opacity:.85;}
+  .checkers{
+    position:absolute; left:0; right:0; display:flex; flex-direction:column; align-items:center;
+    pointer-events:none;
+  }
+  .row.top .checkers{top:0;}
+  .row.bottom .checkers{bottom:0; flex-direction:column-reverse;justify-content:flex-start;}
+  .checker{
+    width:72%; aspect-ratio:1; border-radius:50%;
+    box-shadow:0 2px 3px rgba(0,0,0,.4); position:relative;
+  }
+  .checker:not(:first-child){margin-top:-22%;}
+  .checker.w{background:radial-gradient(circle at 35% 30%, #fff, #cfcfcf 70%); border:1px solid #999;}
+  .checker.b{background:radial-gradient(circle at 35% 30%, #555, #111 70%); border:1px solid #000;}
+  .count{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:700; color:#fff; text-shadow:0 1px 2px #000;
+  }
+  .checker.w .count{color:#333; text-shadow:none;}
+
+  .dice-area{display:flex; gap:10px; align-items:center; justify-content:center; min-height:44px;}
+  .die{
+    width:38px; height:38px; border-radius:8px; background:#fafafa; color:#222;
+    display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr);
+    padding:5px; box-shadow:0 2px 4px rgba(0,0,0,.4);
+  }
+  .die div{border-radius:50%; align-self:center; justify-self:center; width:7px; height:7px;}
+  .die .on{background:#222;}
+  .die.used{opacity:.3;}
+  .die .mult{position:absolute;}
+  .die-wrap{position:relative;}
+  .die-wrap .x{
+    position:absolute; top:-8px; right:-8px; background:var(--accent); color:#222;
+    font-size:11px; font-weight:700; border-radius:50%; width:18px; height:18px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  #barW,#barB{
+    position:absolute; left:3px; right:3px; display:flex; flex-direction:column; align-items:center;
+  }
+  #barW{bottom:4px;} #barB{top:4px;}
+  .bar-pip{width:24px; height:24px; border-radius:50%; margin-top:-12px; box-shadow:0 1px 2px rgba(0,0,0,.5);}
+  .bar-pip.w{background:var(--white); border:1px solid #999;}
+  .bar-pip.b{background:#111; border:1px solid #666;}
+  .bar-hit{outline:2px solid var(--accent); cursor:pointer; border-radius:50%;}
+  #onlinePanel{max-width:960px;width:100%;display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;padding:8px;background:#262f2d;border:1px solid #525a54;border-radius:10px;font-size:13px;}
+  #onlinePanel[hidden]{display:none!important}#onlinePanel label{display:flex;gap:5px;align-items:center}#onlinePanel input{width:126px;background:#343b39;color:#fff;border:1px solid #676b65;border-radius:6px;padding:9px;font-size:14px}#onlinePanel details{width:100%;text-align:center}#onlinePanel details input{width:min(100%,390px)}#onlineInfo{flex:1 1 160px;color:#edcd89}#copyInvite{white-space:nowrap}
+  @media(max-width:720px){body{padding:8px;gap:7px}.table{gap:4px}.side{width:34px;flex-shrink:0}.row{height:clamp(122px,26vw,190px);gap:3px}.quadrant{gap:2px}#board{padding:5px;gap:5px}.bar{width:24px}.checker{max-width:36px}.checker:not(:first-child){margin-top:-35%}.tray{padding:2px}.tray .pip{width:16px;height:16px}#onlinePanel{justify-content:start}#onlineInfo{flex-basis:100%}}
+</style>
+</head>
+<body>
+  <h1>♞ Tavla</h1>
+  <div class="controls">
+    <select id="mode">
+      <option value="ai">Bilgisayara karşı (beyaz sen)</option>
+      <option value="2p">İki kişilik (aynı cihaz)</option>
+      <option value="online">🌐 İnternetten iki oyuncu</option>
+    </select>
+    <button id="newBtn">Yeni oyun</button>
+    <button id="rollBtn" class="primary">Zar at</button>
+  </div>
+  <div id="onlinePanel" hidden>
+    <label>Oyuncu adın <input id="playerName" maxlength="24" placeholder="Oyuncu" autocomplete="nickname"></label>
+    <button id="createRoom" class="primary" type="button">＋ Masa aç</button>
+    <label>Masa kodu <input id="roomCode" inputmode="numeric" maxlength="6" placeholder="6 rakam"></label>
+    <button id="joinRoom" type="button">Masaya katıl</button>
+    <button id="copyInvite" type="button" hidden>Bağlantıyı kopyala</button>
+    <span id="onlineInfo" role="status"></span>
+    <details><summary>Sunucu bağlantısı</summary><label>WebSocket adresi <input id="serverUrl" placeholder="wss://sunucunuz.com/ws" spellcheck="false"></label></details>
+  </div>
+  <div id="status">Yeni oyun başlat</div>
+  <div class="table">
+    <div id="board">
+      <div class="row top" id="rowTop">
+        <div class="quadrant" id="qTL"></div>
+        <div class="bar">
+          <div id="barB"></div>
+          <div class="dice-area" id="diceTop" style="flex-direction:column;"></div>
+        </div>
+        <div class="quadrant" id="qTR"></div>
+      </div>
+      <div class="row bottom" id="rowBottom">
+        <div class="quadrant" id="qBL"></div>
+        <div class="bar">
+          <div class="dice-area" id="diceBot" style="flex-direction:column;"></div>
+          <div id="barW"></div>
+        </div>
+        <div class="quadrant" id="qBR"></div>
+      </div>
+    </div>
+    <div class="side">
+      <div class="tray black" id="trayB" title="Siyah toplama"><span class="label" id="trayBL">0</span></div>
+      <div class="tray won" id="trayW" title="Beyaz toplama"><span class="label" id="trayWL">0</span></div>
+    </div>
+  </div>
+
+<script>
+"use strict";
+// ---------- state ----------
+let board, bar, off, turn, dice, diceUsed, sel, mode, gameOver, aiBusy;
+
+function init(){
+  board = new Array(24).fill(0);
+  // pozitif = beyaz, negatif = siyah
+  board[23]=2; board[12]=5; board[7]=3; board[5]=5;       // beyaz (24/13/8/6 noktalari)
+  board[0]=-2; board[11]=-5; board[16]=-3; board[18]=-5;  // siyah
+  bar={w:0,b:0}; off={w:0,b:0};
+  turn='w'; dice=[]; diceUsed=[]; sel=null; gameOver=false; aiBusy=false;
+  setStatus("Sıra <b>beyazda</b> — zar at");
+  render();
+}
+
+const isW = p => p==='w';
+const dirOf = p => isW(p) ? -1 : 1;
+const enemyOf = p => isW(p) ? 'b' : 'w';
+
+function canLand(i, p){
+  const v = board[i];
+  if (p==='w') return v>=0 || v===-1;
+  return v<=0 || v===1;
+}
+const enterIdx = (p,d) => isW(p) ? 24-d : d-1;
+
+function allInHome(p){
+  for(let i=0;i<24;i++){
+    const v=board[i];
+    if(p==='w' && v>0 && i>5) return false;
+    if(p==='b' && v<0 && i<18) return false;
+  }
+  return true;
+}
+
+function genMoves(p, diceList){
+  const moves=[];
+  const myBar = isW(p) ? bar.w : bar.b;
+  const uniq=[...new Set(diceList)];
+  if(myBar>0){
+    for(const d of uniq){
+      const to=enterIdx(p,d);
+      if(canLand(to,p)) moves.push({from:'bar',to,die:d,hit: isEnemySingle(to,p)});
+    }
+    return moves;
+  }
+  const inHome = allInHome(p);
+  for(const d of uniq){
+    for(let i=0;i<24;i++){
+      const v=board[i];
+      if(p==='w' && v<=0) continue;
+      if(p==='b' && v>=0) continue;
+      const to=i+dirOf(p)*d;
+      if(to>=0 && to<24){
+        if(canLand(to,p)) moves.push({from:i,to,die:d,hit:isEnemySingle(to,p)});
+      } else if(inHome && to<0 || inHome && to>23){
+        if(p==='w'){
+          if(d===i+1 || noWhiteBeyond(i)) moves.push({from:i,to:'off',die:d,hit:false});
+        } else {
+          if(d===24-i || noBlackBeyond(i)) moves.push({from:i,to:'off',die:d,hit:false});
+        }
+      }
+    }
+  }
+  return moves;
+}
+function noWhiteBeyond(i){ for(let j=i+1;j<=5;j++) if(board[j]>0) return false; return true; }
+function noBlackBeyond(i){ for(let j=18;j<i;j++) if(board[j]<0) return false; return true; }
+function isEnemySingle(i,p){
+  const v=board[i];
+  return p==='w' ? v===-1 : v===1;
+}
+
+function applyMove(m, p){
+  if(m.from==='bar'){ isW(p)?bar.w--:bar.b--; }
+  else { board[m.from]+= isW(p)?-1:1; }
+  if(m.to==='off'){ isW(p)?off.w++:off.b++; }
+  else {
+    if(m.hit){ board[m.to]=0; isW(p)?bar.b++:bar.w++; }
+    board[m.to]+= isW(p)?1:-1;
+  }
+  const k = dice.indexOf(m.die);
+  if(k>=0) dice.splice(k,1);
+  sel=null;
+  render();
+}
+
+// ---------- turn flow ----------
+function roll(){
+  if(gameOver || dice.length>0 || aiBusy) return;
+  const d1=1+Math.floor(Math.random()*6), d2=1+Math.floor(Math.random()*6);
+  dice = d1===d2 ? [d1,d1,d1,d1] : [d1,d2];
+  diceUsed=[];
+  renderDice();
+  const name = isW(turn)?'beyaz':'siyah';
+  if(genMoves(turn,dice).length===0){
+    setStatus(`<b>${name}</b> ${d1}-${d2} attı, oynayacak hamle yok`);
+    setTimeout(endTurn, 1500);
+  } else {
+    setStatus(`<b>${name}</b> ${d1}-${d2} attı`);
+    if(mode==='ai' && turn==='b') aiPlay();
+  }
+}
+function endTurn(){
+  dice=[]; sel=null;
+  turn = enemyOf(turn);
+  if(!gameOver) setStatus(`Sıra <b>${isW(turn)?'beyazda':'siyahta'}</b> — zar at`);
+  render();
+  if(!gameOver && mode==='ai' && turn==='b'){
+    setTimeout(()=>{ if(!gameOver && dice.length===0 && !aiBusy) roll(); }, 700);
+  }
+}
+function afterMove(p){
+  if(off.w===15 || off.b===15){
+    gameOver=true;
+    setStatus(`🎉 <b>${off.w===15?'Beyaz':'Siyah'}</b> kazandı!`);
+    render(); return;
+  }
+  if(dice.length===0 || genMoves(p,dice).length===0){
+    setTimeout(endTurn, 500);
+  } else if(mode==='ai' && p==='b'){
+    setTimeout(aiPlay, 400);
+  } else {
+    render();
+  }
+}
+
+// ---------- AI ----------
+function aiPlay(){
+  if(gameOver) return;
+  aiBusy=true;
+  const moves = genMoves('b', dice);
+  if(moves.length===0){ aiBusy=false; endTurn(); return; }
+  let best=moves[0], bestScore=-1e9;
+  for(const m of moves){
+    let s = Math.random()*2;
+    if(m.to==='off') s+=80;
+    if(m.hit) s+=50;
+    if(m.from==='bar') s+=40;
+    // en gerideki tasi ilerletmeyi onceliklendir
+    s += (m.from==='bar') ? 23 : (isW('b') ? m.from : 23-m.from);
+    // kendi pulunun uzerine dusup nokta yapmayi tesvik et
+    if(m.to!=='off' && board[m.to]!==0 && (isW('b')?board[m.to]<0:board[m.to]>0)) s+=4;
+    if(s>bestScore){bestScore=s;best=m;}
+  }
+  applyMove(best,'b');
+  aiBusy=false;
+  afterMove('b');
+}
+
+// ---------- UI ----------
+const qTL=document.getElementById('qTL'), qTR=document.getElementById('qTR'),
+      qBL=document.getElementById('qBL'), qBR=document.getElementById('qBR');
+const pointEls=[];
+function buildBoard(){
+  const mk=(idx,q)=>{
+    const d=document.createElement('div');
+    d.className='point '+(((idx%2===0))?'light':'dark');
+    d.dataset.idx=idx;
+    d.innerHTML='<div class="tri"></div><div class="checkers"></div>';
+    d.addEventListener('click',()=>onPointClick(idx));
+    q.appendChild(d); pointEls[idx]=d;
+  };
+  [12,13,14,15,16,17].forEach(i=>mk(i,qTL));
+  [18,19,20,21,22,23].forEach(i=>mk(i,qTR));
+  [11,10,9,8,7,6].forEach(i=>mk(i,qBL));
+  [5,4,3,2,1,0].forEach(i=>mk(i,qBR));
+}
+buildBoard();
+
+function render(){
+  for(let i=0;i<24;i++){
+    const el=pointEls[i], v=board[i], box=el.querySelector('.checkers');
+    box.innerHTML='';
+    const n=Math.abs(v);
+    if(n>0){
+      const show=Math.min(n,5);
+      for(let k=0;k<show;k++){
+        const c=document.createElement('div');
+        c.className='checker '+(v>0?'w':'b');
+        if(k===show-1 && n>1){ const s=document.createElement('span'); s.className='count'; s.textContent=n; c.appendChild(s); }
+        box.appendChild(c);
+      }
+    }
+    el.classList.toggle('sel', sel===i);
+    el.querySelector('.tri').classList.remove('hl');
+  }
+  // hedefleri göster
+  if(sel!==null){
+    for(const m of genMovesForSel()){
+      if(m.to==='off'){ document.getElementById(isW(turn)?'trayW':'trayB').classList.add('target'); }
+      else pointEls[m.to].querySelector('.tri').classList.add('hl');
+    }
+  } else {
+    document.getElementById('trayW').classList.remove('target');
+    document.getElementById('trayB').classList.remove('target');
+  }
+  // bar
+  renderBar('barW',bar.w,'w'); renderBar('barB',bar.b,'b');
+  // toplama
+  renderTray('trayW',off.w,'w'); renderTray('trayB',off.b,'b');
+  renderDice();
+  document.getElementById('rollBtn').disabled = mode==='online'?!onlineReady||onlineRole!==turn||dice.length>0||gameOver:gameOver || dice.length>0 || (mode==='ai'&&turn==='b');
+}
+function renderBar(id,n,color){
+  const el=document.getElementById(id); el.innerHTML='';
+  for(let k=0;k<Math.min(n,4);k++){
+    const p=document.createElement('div');
+    p.className='bar-pip '+color+(n>0&&turn===colorToPlayer(color)&&dice.length>0?' bar-hit':'');
+    p.addEventListener('click',(e)=>{e.stopPropagation(); if(dice.length) onBarClick();});
+    el.appendChild(p);
+  }
+}
+const colorToPlayer = c => c==='w'?'w':'b';
+function renderTray(id,n,color){
+  const el=document.getElementById(id); el.innerHTML='';
+  const lab=document.createElement('span'); lab.className='label'; lab.textContent=n; el.appendChild(lab);
+  for(let k=0;k<Math.min(n,10);k++){
+    const p=document.createElement('div'); p.className='pip '+color; el.appendChild(p);
+  }
+  el.onclick=()=>{ if(sel!==null){ const m=genMovesForSel().find(m=>m.to==='off'); if(m){ doMove(m); } } };
+}
+function renderDice(){
+  const areas=[document.getElementById('diceTop'),document.getElementById('diceBot')];
+  areas.forEach(a=>a.innerHTML='');
+  if(!dice.length) return;
+  const area = isW(turn)?areas[1]:areas[0];
+  const counts={};
+  dice.forEach(d=>counts[d]=(counts[d]||0)+1);
+  Object.keys(counts).forEach(d=>{
+    const wrap=document.createElement('div'); wrap.className='die-wrap';
+    const die=document.createElement('div'); die.className='die';
+    const pips={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]}[d];
+    for(let i=0;i<9;i++){ const c=document.createElement('div'); if(pips.includes(i)) c.className='on'; die.appendChild(c); }
+    wrap.appendChild(die);
+    if(counts[d]>1){ const x=document.createElement('span'); x.className='x'; x.textContent='×'+counts[d]; wrap.appendChild(x); }
+    area.appendChild(wrap);
+  });
+}
+
+function genMovesForSel(){
+  if(sel===null) return [];
+  if(sel==='bar') return genMoves(turn,dice).filter(m=>m.from==='bar');
+  return genMoves(turn,dice).filter(m=>m.from===sel);
+}
+
+function onPointClick(i){
+  if(gameOver || dice.length===0) return;
+  if(mode==='ai' && turn==='b') return;
+  const v=board[i];
+  const mine = isW(turn)? v>0 : v<0;
+  if(sel!==null){
+    const m=genMovesForSel().find(m=>m.to===i);
+    if(m){ doMove(m); return; }
+  }
+  if(mine){ sel = (sel===i? null : i); render(); }
+}
+function onBarClick(){
+  if(gameOver || dice.length===0) return;
+  if(mode==='ai' && turn==='b') return;
+  if((isW(turn)?bar.w:bar.b)>0){ sel='bar'; render(); }
+}
+function doMove(m){
+  applyMove(m,turn);
+  afterMove(turn);
+}
+
+function setStatus(h){ document.getElementById('status').innerHTML=h; }
+
+document.getElementById('rollBtn').addEventListener('click',()=>roll());
+document.getElementById('newBtn').addEventListener('click',()=>{if(mode==='online'){document.getElementById('onlineInfo').textContent='Online maçta yeniden başlatma için yeni masa aç.';return;}mode=document.getElementById('mode').value;init();});
+document.getElementById('mode').addEventListener('change',()=>{disconnectOnline();mode=document.getElementById('mode').value;document.getElementById('onlinePanel').hidden=mode!=='online'; init();if(mode==='online')setStatus('İnternetten oynamak için masa aç veya kodla katıl.');});
+// ----- Dedicated online game transport. Server validates dice and every move. -----
+let onlineSocket=null,onlineReady=false,onlineRole=null,onlineLegal=[],onlineCode='',onlineToken='',onlinePlayers=null,onlineManualClose=false,retryTimer=null;
+const $o=id=>document.getElementById(id);
+const hostName=()=>($o('playerName').value.trim().slice(0,24)||'Oyuncu');
+const wsAddress=()=>{let url=$o('serverUrl').value.trim();if(!url){if(location.protocol==='http:'||location.protocol==='https:')url=(location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws';else url='ws://localhost:3000/ws';}return url;};
+$o('serverUrl').value=localStorage.getItem('tavla_online_server')||'';
+$o('serverUrl').addEventListener('change',()=>localStorage.setItem('tavla_online_server',$o('serverUrl').value.trim()));
+$o('playerName').value=localStorage.getItem('tavla_online_name')||'';
+$o('playerName').addEventListener('change',()=>localStorage.setItem('tavla_online_name',hostName()));
+const onlineNotice=text=>{$o('onlineInfo').textContent=text;};
+const sendOnline=msg=>{if(onlineSocket?.readyState===WebSocket.OPEN)onlineSocket.send(JSON.stringify(msg));};
+function disconnectOnline(){onlineManualClose=true;clearTimeout(retryTimer);if(onlineSocket){try{onlineSocket.close(1000,'leave');}catch(_){}}onlineSocket=null;onlineReady=false;onlineLegal=[];onlineRole=null;onlineToken='';onlineCode='';}
+function connectOnline(command){
+ disconnectOnline();onlineManualClose=false;
+ let url=wsAddress();if(!/^wss?:\/\//.test(url)){onlineNotice('Sunucu adresi ws:// veya wss:// ile başlamalı.');return;}
+ const ws=new WebSocket(url);onlineSocket=ws;onlineNotice('Sunucuya bağlanıyor…');
+ ws.addEventListener('open',()=>{if(onlineSocket!==ws)return;sendOnline(command);});
+ ws.addEventListener('message',event=>{if(onlineSocket!==ws)return;let msg;try{msg=JSON.parse(event.data);}catch{return;}
+  if(msg.type==='error'){onlineNotice('⚠ '+msg.message);return;}
+  if(msg.type==='joined'){onlineCode=msg.code;onlineRole=msg.role;onlineToken=msg.token;sessionStorage.setItem('tavla_online_session',JSON.stringify({code:onlineCode,token:onlineToken}));$o('roomCode').value=onlineCode;$o('copyInvite').hidden=false;onlineNotice('Masa '+onlineCode+' · '+(onlineRole==='w'?'Beyaz':'Siyah')+' olarak bağlandın.');return;}
+  if(msg.type==='state'){
+   onlineReady=!!msg.ready;onlineRole=msg.role;onlineCode=msg.room;onlinePlayers=msg.players;onlineLegal=msg.legal||[];sel=null;
+   const g=msg.game;board=[...g.board];bar={...g.bar};off={...g.off};turn=g.turn;dice=[...g.dice];gameOver=!!g.winner;aiBusy=false;render();
+   const who=onlinePlayers?.[turn]?.name||(turn==='w'?'Beyaz':'Siyah');
+   setStatus(g.winner?'🏆 '+(onlinePlayers?.[g.winner]?.name||'Oyuncu')+' kazandı!':!onlineReady?'Rakibin bağlanması bekleniyor · Masa '+onlineCode:(dice.length?'Sıra <b>'+escapeText(who)+'</b> · Pulu seç':'Sıra <b>'+escapeText(who)+'</b> · Zar at'));
+   onlineNotice('Masa: '+onlineCode+' · '+(onlineReady?'İki oyuncu bağlı':'Rakip bekleniyor')+' · '+(onlineRole==='w'?'Beyaz':'Siyah'));
+   return;
+  }
+ });
+ ws.addEventListener('close',()=>{if(onlineSocket!==ws||onlineManualClose)return;onlineReady=false;render();onlineNotice('Bağlantı koptu. Tekrar bağlanılıyor…');if(onlineCode&&onlineToken){retryTimer=setTimeout(()=>connectOnline({type:'join',code:onlineCode,token:onlineToken,name:hostName()}),2200);}else onlineNotice('Bağlantı kesildi; sunucuyu kontrol et.');});
+ ws.addEventListener('error',()=>{onlineNotice('Sunucuya erişilemiyor. Adresi ve sunucu durumunu kontrol et.');});
+}
+function escapeText(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+$o('createRoom').onclick=()=>{if(mode!=='online')return;connectOnline({type:'create',name:hostName()});};
+$o('joinRoom').onclick=()=>{const code=$o('roomCode').value.trim();if(!/^\d{6}$/.test(code)){onlineNotice('6 rakamlı masa kodunu gir.');return;}connectOnline({type:'join',code,name:hostName()});};
+$o('copyInvite').onclick=async()=>{const link=new URL(location.href);link.searchParams.set('room',onlineCode);try{await navigator.clipboard.writeText(link.toString());onlineNotice('Davet bağlantısı kopyalandı.')}catch{onlineNotice(link.toString())}};
+const originalRoll=roll;
+roll=function(){if(mode==='online'){if(onlineReady&&onlineRole===turn&&!dice.length)sendOnline({type:'roll'});return;}originalRoll();};
+const originalDoMove=doMove;
+doMove=function(m){if(mode==='online'){if(!onlineReady||onlineRole!==turn)return;const allowed=onlineLegal.find(x=>x.from===m.from&&x.to===m.to&&x.die===m.die);if(allowed)sendOnline({type:'move',from:allowed.from,to:allowed.to,die:allowed.die});return;}originalDoMove(m);};
+const originalGenMovesForSel=genMovesForSel;
+genMovesForSel=function(){if(mode==='online')return onlineLegal.filter(m=>m.from===sel);return originalGenMovesForSel();};
+const originalOnPointClick=onPointClick;
+onPointClick=function(i){if(mode==='online'&&(!onlineReady||onlineRole!==turn))return;originalOnPointClick(i);};
+const originalOnBarClick=onBarClick;
+onBarClick=function(){if(mode==='online'&&(!onlineReady||onlineRole!==turn))return;originalOnBarClick();};
+const inviteCode=new URL(location.href).searchParams.get('room');
+mode='ai';init();
+if(inviteCode&&/^\d{6}$/.test(inviteCode)){$o('mode').value='online';mode='online';$o('onlinePanel').hidden=false;$o('roomCode').value=inviteCode;onlineNotice('Davet kodu alındı. İsmini yaz ve Masaya katıl düğmesine bas.');}
+
+</script>
+</body>
+</html>
